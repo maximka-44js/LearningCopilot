@@ -1,10 +1,10 @@
-Максим Колесников - "Learning Copilot"
+# Максим Колесников - "Learning Copilot"
 
-Группа: 11 - Е - 2
+### Группа: 11 - Е - 2
 
-Электронная почта: mvkolesnikov@edu.hse.ru
+### Электронная почта: mvkolesnikov@edu.hse.ru
 
-Tg: @shdj12344
+### Tg: @shdj12344
 
 [ НАЗВАНИЕ ПРОЕКТА ]
 
