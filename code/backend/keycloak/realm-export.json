@@ -1,0 +1,25 @@
+{
+  "realm": "lc",
+  "enabled": true,
+  "displayName": "LC",
+  "loginTheme": "lc-keycloak-theme",
+  "accountTheme": "lc-keycloak-theme",
+  "sslRequired": "external",
+  "clients": [
+    {
+      "clientId": "lc-frontend",
+      "name": "LC Frontend",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://learning-copilot-ivr.ru/api/auth/callback/keycloak"
+      ],
+      "webOrigins": [
+        "https://learning-copilot-ivr.ru"
+      ]
+    }
+  ]
+}

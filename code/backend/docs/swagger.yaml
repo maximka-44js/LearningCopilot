@@ -1,0 +1,4495 @@
+basePath: /v1
+definitions:
+  entity.CompetencyBlockType:
+    enum:
+    - comprehension
+    - memorization
+    - practice
+    type: string
+    x-enum-varnames:
+    - CompetencyBlockComprehension
+    - CompetencyBlockMemorization
+    - CompetencyBlockPractice
+  entity.ProjectPriority:
+    enum:
+    - low
+    - normal
+    - high
+    type: string
+    x-enum-varnames:
+    - ProjectPriorityLow
+    - ProjectPriorityNormal
+    - ProjectPriorityHigh
+  entity.ProjectStatus:
+    enum:
+    - active
+    - paused
+    - archived
+    type: string
+    x-enum-varnames:
+    - ProjectStatusActive
+    - ProjectStatusPaused
+    - ProjectStatusArchived
+  entity.RiskLevel:
+    enum:
+    - low
+    - medium
+    - high
+    - critical
+    type: string
+    x-enum-varnames:
+    - RiskLevelLow
+    - RiskLevelMedium
+    - RiskLevelHigh
+    - RiskLevelCritical
+  entity.StageStatus:
+    enum:
+    - active
+    - paused
+    - archived
+    type: string
+    x-enum-varnames:
+    - StageStatusActive
+    - StageStatusPaused
+    - StageStatusArchived
+  entity.TaskStatus:
+    enum:
+    - backlog
+    - learning
+    - baseline_passed
+    - at_risk
+    - stable
+    - exam_ready
+    - archived
+    type: string
+    x-enum-varnames:
+    - TaskStatusBacklog
+    - TaskStatusLearning
+    - TaskStatusBaselinePassed
+    - TaskStatusAtRisk
+    - TaskStatusStable
+    - TaskStatusExamReady
+    - TaskStatusArchived
+  github_com_maximka-44js_lc_internal_app_domain.AppError:
+    properties:
+      code:
+        type: string
+      details:
+        additionalProperties: {}
+        type: object
+      kind:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.Kind'
+      message:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_app_domain.Kind:
+    enum:
+    - validation
+    - not_found
+    - conflict
+    - unauthorized
+    - forbidden
+    - internal
+    - time_out
+    - limit_exceeded
+    type: string
+    x-enum-varnames:
+    - KindValidation
+    - KindNotFound
+    - KindConflict
+    - KindUnauthorized
+    - KindForbidden
+    - KindInternal
+    - KindTimeOut
+    - KindLimit
+  github_com_maximka-44js_lc_internal_projects_controller_restapi_v1_request.TaskCompetencyBlock:
+    properties:
+      type:
+        allOf:
+        - $ref: '#/definitions/entity.CompetencyBlockType'
+        enum:
+        - comprehension
+        - memorization
+        - practice
+        example: comprehension
+      weight:
+        example: 40
+        maximum: 100
+        minimum: 1
+        type: integer
+    required:
+    - type
+    - weight
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.AggregationPolicy:
+    properties:
+      priority_high_weight:
+        type: number
+      priority_low_weight:
+        type: number
+      priority_normal_weight:
+        type: number
+      urgency_24h_weight:
+        type: number
+      urgency_72h_weight:
+        type: number
+      urgency_7d_weight:
+        type: number
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.AssessmentSnapshot:
+    properties:
+      block_type:
+        $ref: '#/definitions/entity.CompetencyBlockType'
+      confidence_after:
+        type: number
+      confidence_before:
+        type: number
+      id:
+        type: string
+      normalized_score:
+        type: number
+      raw_score:
+        type: number
+      recorded_at:
+        type: string
+      source:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.AssessmentSource'
+      source_reference:
+        type: string
+      source_reference_type:
+        type: string
+      task_id:
+        type: string
+      trace_id:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.AssessmentSource:
+    enum:
+    - dialog
+    - mini_case
+    - external_system
+    - manual_confirmation
+    type: string
+    x-enum-varnames:
+    - AssessmentSourceDialog
+    - AssessmentSourceMiniCase
+    - AssessmentSourceExternal
+    - AssessmentSourceManualConfirm
+  github_com_maximka-44js_lc_internal_projects_entity.CalibrationPolicy:
+    properties:
+      gap_threshold:
+        type: number
+      penalty_multiplier:
+        type: number
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.CompetencyBlock:
+    properties:
+      decay_profile:
+        type: string
+      last_assessed_at:
+        type: string
+      mastery:
+        type: number
+      risk_state:
+        $ref: '#/definitions/entity.RiskLevel'
+      type:
+        $ref: '#/definitions/entity.CompetencyBlockType'
+      weight:
+        type: integer
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.DecayProfile:
+    properties:
+      half_life_hours:
+        type: number
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.Project:
+    properties:
+      archived_at:
+        type: string
+      coverage:
+        type: number
+      created_at:
+        type: string
+      deadline_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      name:
+        type: string
+      owner_id:
+        type: string
+      priority:
+        $ref: '#/definitions/entity.ProjectPriority'
+      readiness:
+        type: number
+      risk:
+        $ref: '#/definitions/entity.RiskLevel'
+      status:
+        $ref: '#/definitions/entity.ProjectStatus'
+      updated_at:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.Recommendation:
+    properties:
+      block_type:
+        $ref: '#/definitions/entity.CompetencyBlockType'
+      next_actions:
+        items:
+          type: string
+        type: array
+      priority_hint:
+        $ref: '#/definitions/entity.ProjectPriority'
+      reason:
+        type: string
+      task_id:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.RecommendationPolicy:
+    properties:
+      acceptable_mastery_threshold:
+        type: number
+      calibration_gap_threshold:
+        type: number
+      low_mastery_threshold:
+        type: number
+      max_recommendations:
+        type: integer
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.RiskPolicy:
+    properties:
+      block_critical_mastery_below:
+        type: number
+      block_critical_readiness_below:
+        type: number
+      block_high_mastery_below:
+        type: number
+      block_high_readiness_below:
+        type: number
+      block_medium_mastery_below:
+        type: number
+      block_medium_readiness_below:
+        type: number
+      false_confidence_gap:
+        type: number
+      task_critical_readiness_below:
+        type: number
+      task_high_readiness_below:
+        type: number
+      task_medium_readiness_below:
+        type: number
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.Stage:
+    properties:
+      archived_at:
+        type: string
+      coverage:
+        type: number
+      created_at:
+        type: string
+      deadline_at:
+        type: string
+      goal:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      order:
+        type: integer
+      project_id:
+        type: string
+      readiness:
+        type: number
+      risk:
+        $ref: '#/definitions/entity.RiskLevel'
+      status:
+        $ref: '#/definitions/entity.StageStatus'
+      updated_at:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.Task:
+    properties:
+      archived_at:
+        type: string
+      blocks:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.CompetencyBlock'
+        type: array
+      coverage:
+        type: number
+      created_at:
+        type: string
+      deadline_at:
+        type: string
+      difficulty:
+        type: integer
+      id:
+        type: string
+      outcome:
+        type: string
+      policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.TaskPolicy'
+      priority:
+        $ref: '#/definitions/entity.ProjectPriority'
+      readiness:
+        type: number
+      risk:
+        $ref: '#/definitions/entity.RiskLevel'
+      stage_id:
+        type: string
+      status:
+        $ref: '#/definitions/entity.TaskStatus'
+      updated_at:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_projects_entity.TaskPolicy:
+    properties:
+      exam_ready_min_mastery:
+        type: number
+      require_non_critical_block_risk:
+        type: boolean
+    type: object
+  github_com_maximka-44js_lc_internal_projects_usecase.BlockScoreNow:
+    properties:
+      freshness:
+        type: number
+      mastery:
+        type: number
+      risk:
+        $ref: '#/definitions/entity.RiskLevel'
+      scoreNow:
+        type: number
+      type:
+        $ref: '#/definitions/entity.CompetencyBlockType'
+      weight:
+        type: integer
+    type: object
+  github_com_maximka-44js_lc_internal_projects_usecase.CriticalItem:
+    properties:
+      deadlineAt:
+        type: string
+      reason:
+        type: string
+      stageID:
+        type: string
+      taskID:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_projects_usecase.ForecastPoint:
+    properties:
+      at:
+        type: string
+      readiness:
+        type: number
+      risk:
+        $ref: '#/definitions/entity.RiskLevel'
+    type: object
+  github_com_maximka-44js_lc_internal_projects_usecase.RecordAssessmentSnapshotOutput:
+    properties:
+      snapshot:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.AssessmentSnapshot'
+      task:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.AbortUpload:
+    properties:
+      upload_id:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CompletedPart:
+    properties:
+      etag:
+        type: string
+      part_number:
+        minimum: 1
+        type: integer
+    required:
+    - etag
+    - part_number
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.ConfirmUpload:
+    properties:
+      completed_parts:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CompletedPart'
+        type: array
+      upload_id:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CopyFile:
+    properties:
+      name:
+        maxLength: 100
+        type: string
+      target_folder_id:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CopyFolder:
+    properties:
+      name:
+        example: Project docs copy
+        maxLength: 100
+        type: string
+      target_parent_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CreateFolder:
+    properties:
+      lib_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: Project docs
+        maxLength: 100
+        type: string
+      parent_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    required:
+    - lib_id
+    - name
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CreateLibrary:
+    properties:
+      accesses:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.LibraryAccess'
+        type: array
+      description:
+        example: Library description
+        maxLength: 1000
+        type: string
+      public:
+        example: false
+        type: boolean
+      title:
+        example: My library
+        maxLength: 100
+        type: string
+    required:
+    - title
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.InitUpload:
+    properties:
+      checksum_declared:
+        type: string
+      folder_id:
+        type: string
+      library_id:
+        type: string
+      mime_type:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      size:
+        minimum: 0
+        type: integer
+    required:
+    - library_id
+    - mime_type
+    - name
+    - size
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.PresignPart:
+    properties:
+      checksum_sha256:
+        type: string
+      part_number:
+        minimum: 1
+        type: integer
+      size:
+        minimum: 1
+        type: integer
+      upload_id:
+        type: string
+    required:
+    - checksum_sha256
+    - part_number
+    - size
+    - upload_id
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.UpdateFile:
+    properties:
+      folder_id:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+    required:
+    - name
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.UpdateFolder:
+    properties:
+      name:
+        example: Project docs
+        maxLength: 100
+        type: string
+      parent_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    required:
+    - name
+    type: object
+  github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.UpdateLibrary:
+    properties:
+      accesses:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.LibraryAccess'
+        type: array
+      description:
+        example: Library description
+        maxLength: 1000
+        type: string
+      public:
+        example: false
+        type: boolean
+      title:
+        example: My library
+        maxLength: 100
+        type: string
+    required:
+    - title
+    type: object
+  github_com_maximka-44js_lc_internal_storage_entity.AccessRole:
+    enum:
+    - reader
+    - writer
+    type: string
+    x-enum-varnames:
+    - AccessReader
+    - AccessWriter
+  github_com_maximka-44js_lc_internal_storage_entity.File:
+    description: Represents a file stored in a library or folder.
+    properties:
+      checksum:
+        type: string
+      checksum_declared:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      folder_id:
+        type: string
+      id:
+        type: string
+      library_id:
+        type: string
+      mime_type:
+        type: string
+      name:
+        type: string
+      scan_attempts:
+        type: integer
+      size:
+        type: integer
+      status:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.FileStatus'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_storage_entity.FileStatus:
+    enum:
+    - created
+    - uploaded
+    - scan_pending
+    - scan_ok
+    - scan_failed
+    - rejected
+    - deleted
+    type: string
+    x-enum-varnames:
+    - FileStatusCreated
+    - FileStatusUploaded
+    - FileStatusScanPending
+    - FileStatusScanOk
+    - FileStatusScanFailed
+    - FileStatusRejected
+    - FileStatusDeleted
+  github_com_maximka-44js_lc_internal_storage_entity.Folder:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: string
+      library_id:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_storage_entity.Library:
+    description: Represents a library of documents.
+    properties:
+      accesses:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.LibraryAccess'
+        type: array
+      created_at:
+        example: "2026-01-01T00:00:00Z"
+        type: string
+      deleted_at:
+        example: "2026-01-01T00:00:00Z"
+        type: string
+      description:
+        example: A library of my documents
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      public:
+        example: false
+        type: boolean
+      title:
+        example: My Library
+        type: string
+      updated_at:
+        example: "2026-01-01T00:00:00Z"
+        type: string
+      user_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_storage_entity.LibraryAccess:
+    description: Represents a user's access to a library.
+    properties:
+      role:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.AccessRole'
+      userID:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_storage_usecase.DownloadFileResult:
+    properties:
+      mimeType:
+        type: string
+      name:
+        type: string
+      objectKey:
+        type: string
+      url:
+        type: string
+    type: object
+  github_com_maximka-44js_lc_internal_storage_usecase.InitUploadResult:
+    properties:
+      file:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.File'
+      presignURL:
+        type: string
+      uploadID:
+        type: string
+    type: object
+  internal_access_controller_restapi_v1.apiKeyResponse:
+    properties:
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      last_used_at:
+        type: string
+      name:
+        type: string
+      prefix:
+        type: string
+      revoked_at:
+        type: string
+      scopes:
+        items:
+          type: string
+        type: array
+    type: object
+  internal_access_controller_restapi_v1.createAPIKeyRequest:
+    properties:
+      expires_at:
+        type: string
+      name:
+        maxLength: 120
+        type: string
+      scopes:
+        items:
+          type: string
+        minItems: 1
+        type: array
+    required:
+    - name
+    - scopes
+    type: object
+  internal_access_controller_restapi_v1.createAPIKeyResponse:
+    properties:
+      api_key:
+        $ref: '#/definitions/internal_access_controller_restapi_v1.apiKeyResponse'
+      secret:
+        type: string
+    type: object
+  internal_access_controller_restapi_v1.rotateAPIKeyRequest:
+    properties:
+      name:
+        type: string
+    type: object
+  internal_projects_controller_restapi_v1.getProjectDashboardResponse:
+    properties:
+      coverage:
+        type: number
+      criticalToDeadline:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_usecase.CriticalItem'
+        type: array
+      project:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Project'
+      readinessNow:
+        type: number
+      riskByStage:
+        additionalProperties:
+          $ref: '#/definitions/entity.RiskLevel'
+        type: object
+    type: object
+  internal_projects_controller_restapi_v1.getProjectPoliciesResponse:
+    properties:
+      aggregation:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.AggregationPolicy'
+      calibration:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.CalibrationPolicy'
+      recommendation:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.RecommendationPolicy'
+      risk:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.RiskPolicy'
+    type: object
+  internal_projects_controller_restapi_v1.getStageBoardResponse:
+    properties:
+      blockDeficits:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/entity.CompetencyBlockType'
+          type: array
+        type: object
+      nextActionPriority:
+        additionalProperties:
+          $ref: '#/definitions/entity.ProjectPriority'
+        type: object
+      stage:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Stage'
+      tasks:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+        type: array
+    type: object
+  internal_projects_controller_restapi_v1.getTaskReadinessViewResponse:
+    properties:
+      blockScoresNow:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_usecase.BlockScoreNow'
+        type: array
+      dropForecast:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_usecase.ForecastPoint'
+        type: array
+      lastAssessments:
+        additionalProperties:
+          type: string
+        type: object
+      recommendations:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Recommendation'
+        type: array
+      task:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+    type: object
+  internal_projects_controller_restapi_v1.getUserPoliciesResponse:
+    properties:
+      aggregation:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.AggregationPolicy'
+      calibration:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.CalibrationPolicy'
+      recommendation:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.RecommendationPolicy'
+      risk:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.RiskPolicy'
+    type: object
+  internal_projects_controller_restapi_v1.setAggregationPolicyResponse:
+    properties:
+      priority_high_weight:
+        type: number
+      priority_low_weight:
+        type: number
+      priority_normal_weight:
+        type: number
+      urgency_24h_weight:
+        type: number
+      urgency_72h_weight:
+        type: number
+      urgency_7d_weight:
+        type: number
+    type: object
+  internal_projects_controller_restapi_v1.setCalibrationPolicyResponse:
+    properties:
+      gap_threshold:
+        type: number
+      penalty_multiplier:
+        type: number
+    type: object
+  internal_projects_controller_restapi_v1.setRecommendationPolicyResponse:
+    properties:
+      acceptable_mastery_threshold:
+        type: number
+      calibration_gap_threshold:
+        type: number
+      low_mastery_threshold:
+        type: number
+      max_recommendations:
+        type: integer
+    type: object
+  internal_projects_controller_restapi_v1.setRiskPolicyResponse:
+    properties:
+      block_critical_mastery_below:
+        type: number
+      block_critical_readiness_below:
+        type: number
+      block_high_mastery_below:
+        type: number
+      block_high_readiness_below:
+        type: number
+      block_medium_mastery_below:
+        type: number
+      block_medium_readiness_below:
+        type: number
+      false_confidence_gap:
+        type: number
+      task_critical_readiness_below:
+        type: number
+      task_high_readiness_below:
+        type: number
+      task_medium_readiness_below:
+        type: number
+    type: object
+  internal_projects_controller_restapi_v1.setTaskPolicyResponse:
+    properties:
+      archived_at:
+        type: string
+      blocks:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.CompetencyBlock'
+        type: array
+      coverage:
+        type: number
+      created_at:
+        type: string
+      deadline_at:
+        type: string
+      difficulty:
+        type: integer
+      id:
+        type: string
+      outcome:
+        type: string
+      policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.TaskPolicy'
+      priority:
+        $ref: '#/definitions/entity.ProjectPriority'
+      readiness:
+        type: number
+      risk:
+        $ref: '#/definitions/entity.RiskLevel'
+      stage_id:
+        type: string
+      status:
+        $ref: '#/definitions/entity.TaskStatus'
+      updated_at:
+        type: string
+    type: object
+  internal_storage_controller_restapi_v1.TreeContents:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.File'
+        type: array
+      folders:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Folder'
+        type: array
+      library_id:
+        type: string
+      parent_id:
+        type: string
+    type: object
+  v1.AddStage:
+    properties:
+      deadline_at:
+        example: "2026-09-30T23:59:59Z"
+        type: string
+      goal:
+        example: Build exam-ready understanding of cell structures and processes
+        maxLength: 2000
+        type: string
+      name:
+        example: Cell biology fundamentals
+        maxLength: 160
+        type: string
+      order:
+        example: 1
+        minimum: 1
+        type: integer
+    required:
+    - name
+    - order
+    type: object
+  v1.AddTask:
+    properties:
+      blocks:
+        items:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_controller_restapi_v1_request.TaskCompetencyBlock'
+        minItems: 1
+        type: array
+      deadline_at:
+        example: "2026-10-20T23:59:59Z"
+        type: string
+      difficulty:
+        example: 6
+        maximum: 10
+        minimum: 1
+        type: integer
+      outcome:
+        example: Explain immune response mechanisms and solve case questions
+        maxLength: 2000
+        type: string
+      policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.TaskPolicy'
+      priority:
+        allOf:
+        - $ref: '#/definitions/entity.ProjectPriority'
+        enum:
+        - low
+        - normal
+        - high
+        example: normal
+    required:
+    - blocks
+    - difficulty
+    - outcome
+    - priority
+    type: object
+  v1.ConfigureTaskWeights:
+    properties:
+      weights:
+        $ref: '#/definitions/v1.TaskWeightDistribution'
+    required:
+    - weights
+    type: object
+  v1.CreateProject:
+    properties:
+      deadline_at:
+        example: "2026-12-31T23:59:59Z"
+        type: string
+      description:
+        example: Weekly study plan with milestones
+        maxLength: 4000
+        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        example:
+          source: planner
+          track: biology
+        type: object
+      name:
+        example: Prepare for microbiology exam
+        maxLength: 200
+        type: string
+      priority:
+        allOf:
+        - $ref: '#/definitions/entity.ProjectPriority'
+        enum:
+        - low
+        - normal
+        - high
+        example: normal
+    required:
+    - name
+    - priority
+    type: object
+  v1.GenerateRecommendations:
+    properties:
+      calibration_policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.CalibrationPolicy'
+      recommendation_policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.RecommendationPolicy'
+    type: object
+  v1.RecalculateProjectReadiness:
+    properties:
+      aggregation_policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.AggregationPolicy'
+      at:
+        example: "2026-06-12T10:00:00Z"
+        type: string
+    type: object
+  v1.RecalculateStageReadiness:
+    properties:
+      aggregation_policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.AggregationPolicy'
+      at:
+        example: "2026-06-12T10:00:00Z"
+        type: string
+    type: object
+  v1.RecalculateTaskReadiness:
+    properties:
+      at:
+        example: "2026-06-12T13:00:00Z"
+        type: string
+      profiles:
+        additionalProperties:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.DecayProfile'
+        type: object
+      risk_policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.RiskPolicy'
+    type: object
+  v1.RecordAssessmentSnapshot:
+    properties:
+      block_type:
+        allOf:
+        - $ref: '#/definitions/entity.CompetencyBlockType'
+        enum:
+        - comprehension
+        - memorization
+        - practice
+        example: practice
+      confidence_after:
+        example: 71
+        maximum: 100
+        minimum: 0
+        type: number
+      confidence_before:
+        example: 62
+        maximum: 100
+        minimum: 0
+        type: number
+      normalized_score:
+        example: 75.2
+        maximum: 100
+        minimum: 0
+        type: number
+      raw_score:
+        example: 78.5
+        maximum: 100
+        minimum: 0
+        type: number
+      recorded_at:
+        example: "2026-06-12T12:00:00Z"
+        type: string
+      source:
+        allOf:
+        - $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.AssessmentSource'
+        enum:
+        - dialog
+        - mini_case
+        - external_system
+        - manual_confirmation
+        example: dialog
+      source_reference:
+        example: dialog:session-13
+        maxLength: 1024
+        type: string
+      source_reference_type:
+        example: chat_session
+        maxLength: 64
+        type: string
+      trace_id:
+        example: trace-9f2a
+        maxLength: 128
+        type: string
+    required:
+    - block_type
+    - source
+    type: object
+  v1.SetAggregationPolicy:
+    properties:
+      policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.AggregationPolicy'
+    required:
+    - policy
+    type: object
+  v1.SetCalibrationPolicy:
+    properties:
+      policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.CalibrationPolicy'
+    required:
+    - policy
+    type: object
+  v1.SetRecommendationPolicy:
+    properties:
+      policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.RecommendationPolicy'
+    required:
+    - policy
+    type: object
+  v1.SetRiskPolicy:
+    properties:
+      policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.RiskPolicy'
+    required:
+    - policy
+    type: object
+  v1.SetTaskPolicy:
+    properties:
+      policy:
+        $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.TaskPolicy'
+    required:
+    - policy
+    type: object
+  v1.TaskWeightDistribution:
+    properties:
+      comprehension:
+        example: 40
+        maximum: 100
+        minimum: 1
+        type: integer
+      memorization:
+        example: 30
+        maximum: 100
+        minimum: 1
+        type: integer
+      practice:
+        example: 30
+        maximum: 100
+        minimum: 1
+        type: integer
+    required:
+    - comprehension
+    - memorization
+    - practice
+    type: object
+  v1.TransitionTaskStatus:
+    properties:
+      next_status:
+        allOf:
+        - $ref: '#/definitions/entity.TaskStatus'
+        enum:
+        - backlog
+        - learning
+        - baseline_passed
+        - at_risk
+        - stable
+        - exam_ready
+        - archived
+        example: learning
+    required:
+    - next_status
+    type: object
+  v1.UpdateProject:
+    properties:
+      deadline_at:
+        example: "2026-12-31T23:59:59Z"
+        type: string
+      description:
+        example: Updated plan after diagnostics
+        maxLength: 4000
+        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        example:
+          source: planner
+          track: biology
+        type: object
+      name:
+        example: Prepare for microbiology exam
+        maxLength: 200
+        type: string
+      priority:
+        allOf:
+        - $ref: '#/definitions/entity.ProjectPriority'
+        enum:
+        - low
+        - normal
+        - high
+        example: high
+    required:
+    - name
+    - priority
+    type: object
+  v1.UpdateStage:
+    properties:
+      deadline_at:
+        example: "2026-10-15T23:59:59Z"
+        type: string
+      goal:
+        example: Update milestones based on diagnostic results
+        maxLength: 2000
+        type: string
+      name:
+        example: Cell biology and signaling
+        maxLength: 160
+        type: string
+      order:
+        example: 2
+        minimum: 1
+        type: integer
+    required:
+    - name
+    - order
+    type: object
+  v1.UpdateTask:
+    properties:
+      deadline_at:
+        example: "2026-11-01T23:59:59Z"
+        type: string
+      difficulty:
+        example: 7
+        maximum: 10
+        minimum: 1
+        type: integer
+      outcome:
+        example: Explain immune response mechanisms using mixed exam formats
+        maxLength: 2000
+        type: string
+      priority:
+        allOf:
+        - $ref: '#/definitions/entity.ProjectPriority'
+        enum:
+        - low
+        - normal
+        - high
+        example: high
+    required:
+    - difficulty
+    - outcome
+    - priority
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Multi-domain clean architecture template with translation, user, and
+    task management
+  title: Go Clean Template API
+  version: "1.0"
+paths:
+  /access/api-keys:
+    get:
+      consumes:
+      - application/json
+      description: List current user API keys without secret material
+      operationId: list-api-keys
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal_access_controller_restapi_v1.apiKeyResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: List API keys
+      tags:
+      - access
+    post:
+      consumes:
+      - application/json
+      description: Create a new API key for external REST integrations
+      operationId: create-api-key
+      parameters:
+      - description: API key payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_access_controller_restapi_v1.createAPIKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_access_controller_restapi_v1.createAPIKeyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create API key
+      tags:
+      - access
+  /access/api-keys/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Revoke API key immediately
+      operationId: revoke-api-key
+      parameters:
+      - description: API key ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_access_controller_restapi_v1.apiKeyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Revoke API key
+      tags:
+      - access
+  /access/api-keys/{id}/rotate:
+    post:
+      consumes:
+      - application/json
+      description: Create replacement key and revoke old key after grace window
+      operationId: rotate-api-key
+      parameters:
+      - description: API key ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Optional rename for rotated key
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/internal_access_controller_restapi_v1.rotateAPIKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_access_controller_restapi_v1.createAPIKeyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Rotate API key
+      tags:
+      - access
+  /projects:
+    get:
+      consumes:
+      - application/json
+      description: List all projects for the current user
+      operationId: list-projects
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Project'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: List projects
+      tags:
+      - projects
+    post:
+      consumes:
+      - application/json
+      description: Create a new project for the current user
+      operationId: create-project
+      parameters:
+      - description: Project data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.CreateProject'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create project
+      tags:
+      - projects
+  /projects/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete project by ID for the current user
+      operationId: delete-project
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete project
+      tags:
+      - projects
+    get:
+      consumes:
+      - application/json
+      description: Get project by ID for the current user
+      operationId: get-project-by-id
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get project by ID
+      tags:
+      - projects
+    put:
+      consumes:
+      - application/json
+      description: Update project details by ID
+      operationId: update-project
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Project data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UpdateProject'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update project
+      tags:
+      - projects
+  /projects/{id}/activate:
+    patch:
+      consumes:
+      - application/json
+      description: Activate project by ID
+      operationId: activate-project
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Activate project
+      tags:
+      - projects
+  /projects/{id}/archive:
+    patch:
+      consumes:
+      - application/json
+      description: Archive project by ID
+      operationId: archive-project
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Archive project
+      tags:
+      - projects
+  /projects/{id}/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Get dashboard read-model for a project
+      operationId: get-project-dashboard
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.getProjectDashboardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get project dashboard
+      tags:
+      - projects-read-model
+  /projects/{id}/pause:
+    patch:
+      consumes:
+      - application/json
+      description: Pause project by ID
+      operationId: pause-project
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Pause project
+      tags:
+      - projects
+  /projects/{id}/policies:
+    get:
+      consumes:
+      - application/json
+      description: Get effective policies for a project (project overrides or user
+        defaults)
+      operationId: get-project-policies
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.getProjectPoliciesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get project policies
+      tags:
+      - policies
+  /projects/{id}/policies/aggregation:
+    patch:
+      consumes:
+      - application/json
+      description: Set project-level aggregation policy
+      operationId: set-project-aggregation-policy
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Aggregation policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SetAggregationPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.setAggregationPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Set project aggregation policy
+      tags:
+      - policies
+  /projects/{id}/policies/calibration:
+    patch:
+      consumes:
+      - application/json
+      description: Set project-level calibration policy
+      operationId: set-project-calibration-policy
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Calibration policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SetCalibrationPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.setCalibrationPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Set project calibration policy
+      tags:
+      - policies
+  /projects/{id}/policies/recommendation:
+    patch:
+      consumes:
+      - application/json
+      description: Set project-level recommendation policy
+      operationId: set-project-recommendation-policy
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Recommendation policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SetRecommendationPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.setRecommendationPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Set project recommendation policy
+      tags:
+      - policies
+  /projects/{id}/policies/risk:
+    patch:
+      consumes:
+      - application/json
+      description: Set project-level risk policy
+      operationId: set-project-risk-policy
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Risk policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SetRiskPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.setRiskPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Set project risk policy
+      tags:
+      - policies
+  /projects/{id}/readiness/recalculate:
+    post:
+      consumes:
+      - application/json
+      description: Recalculate project readiness by ID
+      operationId: recalculate-project-readiness
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Recalculation settings
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/v1.RecalculateProjectReadiness'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Recalculate project readiness
+      tags:
+      - projects
+  /projects/{project_id}/stages:
+    get:
+      consumes:
+      - application/json
+      description: List all stages in a project for the current user
+      operationId: list-stages-by-project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Stage'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: List stages by project
+      tags:
+      - stages
+    post:
+      consumes:
+      - application/json
+      description: Add a new stage to a project
+      operationId: add-stage
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.AddStage'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Stage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Add stage
+      tags:
+      - stages
+  /projects/{project_id}/stages/{stage_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete stage by ID for the current user
+      operationId: delete-stage
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete stage
+      tags:
+      - stages
+    get:
+      consumes:
+      - application/json
+      description: Get stage by ID for the current user
+      operationId: get-stage-by-id
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Stage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get stage by ID
+      tags:
+      - stages
+    put:
+      consumes:
+      - application/json
+      description: Update stage details by ID
+      operationId: update-stage
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Stage data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UpdateStage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Stage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update stage
+      tags:
+      - stages
+  /projects/{project_id}/stages/{stage_id}/activate:
+    patch:
+      consumes:
+      - application/json
+      description: Activate stage by ID
+      operationId: activate-stage
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Stage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Activate stage
+      tags:
+      - stages
+  /projects/{project_id}/stages/{stage_id}/archive:
+    patch:
+      consumes:
+      - application/json
+      description: Archive stage by ID
+      operationId: archive-stage
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Stage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Archive stage
+      tags:
+      - stages
+  /projects/{project_id}/stages/{stage_id}/board:
+    get:
+      consumes:
+      - application/json
+      description: Get board read-model for a project stage
+      operationId: get-stage-board
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.getStageBoardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get stage board
+      tags:
+      - projects-read-model
+  /projects/{project_id}/stages/{stage_id}/pause:
+    patch:
+      consumes:
+      - application/json
+      description: Pause stage by ID
+      operationId: pause-stage
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Stage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Pause stage
+      tags:
+      - stages
+  /projects/{project_id}/stages/{stage_id}/readiness/recalculate:
+    post:
+      consumes:
+      - application/json
+      description: Recalculate stage readiness by ID
+      operationId: recalculate-stage-readiness
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Recalculation settings
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/v1.RecalculateStageReadiness'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Stage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Recalculate stage readiness
+      tags:
+      - stages
+  /projects/{project_id}/stages/{stage_id}/tasks:
+    get:
+      consumes:
+      - application/json
+      description: List all tasks in a stage for the current user
+      operationId: list-tasks-by-stage
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: List tasks by stage
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: Add a new task to a stage
+      operationId: add-task
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.AddTask'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Add task
+      tags:
+      - tasks
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete task by ID for the current user
+      operationId: delete-task
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete task
+      tags:
+      - tasks
+    get:
+      consumes:
+      - application/json
+      description: Get task by ID for the current user
+      operationId: get-task-by-id
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get task by ID
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      description: Update task details by ID
+      operationId: update-task
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: Task data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UpdateTask'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update task
+      tags:
+      - tasks
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}/assessments:
+    post:
+      consumes:
+      - application/json
+      description: Record assessment evidence for a task competency block
+      operationId: record-assessment-snapshot
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: Assessment payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.RecordAssessmentSnapshot'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_usecase.RecordAssessmentSnapshotOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Record assessment snapshot
+      tags:
+      - tasks
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}/exam-ready:
+    patch:
+      consumes:
+      - application/json
+      description: Mark task as exam ready
+      operationId: mark-task-exam-ready
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Mark task exam ready
+      tags:
+      - tasks
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}/policy:
+    patch:
+      consumes:
+      - application/json
+      description: Set policy for a specific task
+      operationId: set-task-policy
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: Task policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SetTaskPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.setTaskPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Set task policy
+      tags:
+      - policies
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}/readiness:
+    get:
+      consumes:
+      - application/json
+      description: Get readiness read-model for a task
+      operationId: get-task-readiness-view
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.getTaskReadinessViewResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get task readiness view
+      tags:
+      - projects-read-model
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}/readiness/recalculate:
+    post:
+      consumes:
+      - application/json
+      description: Recalculate task readiness by ID
+      operationId: recalculate-task-readiness
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: Recalculation settings
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/v1.RecalculateTaskReadiness'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Recalculate task readiness
+      tags:
+      - tasks
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}/recommendations/generate:
+    post:
+      consumes:
+      - application/json
+      description: Generate recommendations for a task
+      operationId: generate-task-recommendations
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: Recommendation settings
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/v1.GenerateRecommendations'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Recommendation'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Generate task recommendations
+      tags:
+      - tasks
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}/sessions/start:
+    post:
+      consumes:
+      - application/json
+      description: Start a learning session for a task
+      operationId: start-task-session
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Start task session
+      tags:
+      - tasks
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Transition task to a new status
+      operationId: transition-task-status
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: Transition payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.TransitionTaskStatus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Transition task status
+      tags:
+      - tasks
+  /projects/{project_id}/stages/{stage_id}/tasks/{task_id}/weights:
+    patch:
+      consumes:
+      - application/json
+      description: Configure competency block weights for a task
+      operationId: configure-task-weights
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Stage ID
+        in: path
+        name: stage_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: Weight distribution
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.ConfigureTaskWeights'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_projects_entity.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Configure task weights
+      tags:
+      - tasks
+  /projects/policies:
+    get:
+      consumes:
+      - application/json
+      description: Get effective user-level policies
+      operationId: get-user-policies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.getUserPoliciesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get user policies
+      tags:
+      - policies
+  /projects/policies/aggregation:
+    patch:
+      consumes:
+      - application/json
+      description: Set user-level aggregation policy
+      operationId: set-aggregation-policy
+      parameters:
+      - description: Aggregation policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SetAggregationPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.setAggregationPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Set aggregation policy
+      tags:
+      - policies
+  /projects/policies/calibration:
+    patch:
+      consumes:
+      - application/json
+      description: Set user-level calibration policy
+      operationId: set-calibration-policy
+      parameters:
+      - description: Calibration policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SetCalibrationPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.setCalibrationPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Set calibration policy
+      tags:
+      - policies
+  /projects/policies/recommendation:
+    patch:
+      consumes:
+      - application/json
+      description: Set user-level recommendation policy
+      operationId: set-recommendation-policy
+      parameters:
+      - description: Recommendation policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SetRecommendationPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.setRecommendationPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Set recommendation policy
+      tags:
+      - policies
+  /projects/policies/risk:
+    patch:
+      consumes:
+      - application/json
+      description: Set user-level risk policy
+      operationId: set-risk-policy
+      parameters:
+      - description: Risk policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SetRiskPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_projects_controller_restapi_v1.setRiskPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Set risk policy
+      tags:
+      - policies
+  /storage/files/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete file and all its parts from storage
+      operationId: delete-file
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.File'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete file
+      tags:
+      - files
+    put:
+      consumes:
+      - application/json
+      description: Update file name or folder for the current user
+      operationId: update-file
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: File data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.UpdateFile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.File'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update file
+      tags:
+      - files
+  /storage/files/{id}/abort:
+    post:
+      consumes:
+      - application/json
+      description: Abort unfinished upload and cleanup temporary objects
+      operationId: abort-upload
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Abort upload payload
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.AbortUpload'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Abort upload
+      tags:
+      - files
+  /storage/files/{id}/complete:
+    post:
+      consumes:
+      - application/json
+      description: Confirm upload after client finished uploading parts; perform integrity
+        checks and finalize file
+      operationId: confirm-upload
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Confirm upload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.ConfirmUpload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.File'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Confirm upload
+      tags:
+      - files
+  /storage/files/{id}/content:
+    get:
+      consumes:
+      - application/json
+      description: Redirect to presigned URL and start file download
+      operationId: download-file-content
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "307":
+          description: Temporary Redirect
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Download file content
+      tags:
+      - files
+  /storage/files/{id}/copy:
+    post:
+      consumes:
+      - application/json
+      description: Copy file inside the same library
+      operationId: copy-file
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Copy file request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CopyFile'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.File'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Copy file
+      tags:
+      - files
+  /storage/files/{id}/download:
+    get:
+      consumes:
+      - application/json
+      description: Get a presigned URL for downloading an existing file
+      operationId: get-file-download
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_usecase.DownloadFileResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get file download URL
+      tags:
+      - files
+  /storage/files/{id}/parts:
+    post:
+      consumes:
+      - application/json
+      description: Get presigned URL for multipart upload part
+      operationId: presign-upload-part
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Part info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.PresignPart'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Presign upload part
+      tags:
+      - files
+  /storage/files/init:
+    post:
+      consumes:
+      - application/json
+      description: Initialize file upload (presign or multipart)
+      operationId: init-upload
+      parameters:
+      - description: Init upload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.InitUpload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_usecase.InitUploadResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Init upload
+      tags:
+      - files
+  /storage/files/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a file directly to backend using multipart/form-data and
+        finalize it in one request
+      operationId: upload-file-direct
+      parameters:
+      - description: Library ID
+        in: formData
+        name: library_id
+        required: true
+        type: string
+      - description: Folder ID
+        in: formData
+        name: folder_id
+        type: string
+      - description: File payload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Optional SHA-256 checksum to verify after upload
+        in: formData
+        name: checksum_declared
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.File'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Upload file (server-side)
+      tags:
+      - files
+  /storage/folders/:
+    post:
+      consumes:
+      - application/json
+      description: Create a new folder for the current user
+      operationId: create-folder
+      parameters:
+      - description: Folder data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CreateFolder'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Folder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create folder
+      tags:
+      - folders
+  /storage/folders/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a folder by ID for the current user
+      operationId: delete-folder
+      parameters:
+      - description: Folder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Folder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete folder
+      tags:
+      - folders
+    get:
+      consumes:
+      - application/json
+      description: Get a specific folder by ID for the current user
+      operationId: get-folder-by-id
+      parameters:
+      - description: Folder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Folder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get folder by ID
+      tags:
+      - folders
+    put:
+      consumes:
+      - application/json
+      description: Update folder name or parent ID for the current user
+      operationId: update-folder
+      parameters:
+      - description: Folder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Folder data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.UpdateFolder'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Folder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update folder
+      tags:
+      - folders
+  /storage/folders/{id}/compress:
+    post:
+      consumes:
+      - application/json
+      description: Trigger ZIP compression task for a folder
+      operationId: compress-folder
+      parameters:
+      - description: Folder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Compress folder
+      tags:
+      - folders
+  /storage/folders/{id}/copy:
+    post:
+      consumes:
+      - application/json
+      description: Copy folder with nested folders and files inside the same library
+      operationId: copy-folder
+      parameters:
+      - description: Folder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Copy folder request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CopyFolder'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Folder'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Copy folder
+      tags:
+      - folders
+  /storage/folders/{id}/extract:
+    post:
+      consumes:
+      - application/json
+      description: Trigger ZIP extraction task for a folder
+      operationId: extract-folder
+      parameters:
+      - description: Folder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Extract folder archive
+      tags:
+      - folders
+  /storage/folders/{id}/tree:
+    get:
+      consumes:
+      - application/json
+      description: Get immediate children for a folder to render the tree view
+      operationId: get-folder-contents
+      parameters:
+      - description: Folder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_storage_controller_restapi_v1.TreeContents'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get folder contents
+      tags:
+      - folders
+  /storage/libraries:
+    get:
+      consumes:
+      - application/json
+      description: List all libraries for the current user
+      operationId: list-libraries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Library'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: List libraries
+      tags:
+      - libraries
+    post:
+      consumes:
+      - application/json
+      description: Create a new library for the current user
+      operationId: create-library
+      parameters:
+      - description: Library data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.CreateLibrary'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Library'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create library
+      tags:
+      - libraries
+  /storage/libraries/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a library by ID for the current user
+      operationId: delete-library
+      parameters:
+      - description: Library ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Library'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete library
+      tags:
+      - libraries
+    get:
+      consumes:
+      - application/json
+      description: Get a specific library by ID for the current user
+      operationId: get-library-by-id
+      parameters:
+      - description: Library ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Library'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get library by ID
+      tags:
+      - libraries
+    put:
+      consumes:
+      - application/json
+      description: Update a library by ID for the current user
+      operationId: update-library
+      parameters:
+      - description: Library ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Library data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.UpdateLibrary'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Library'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update library
+      tags:
+      - libraries
+  /storage/libraries/{id}/compress:
+    post:
+      consumes:
+      - application/json
+      description: Trigger ZIP compression task for a library
+      operationId: compress-library
+      parameters:
+      - description: Library ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Compress library
+      tags:
+      - libraries
+  /storage/libraries/{id}/tree:
+    get:
+      consumes:
+      - application/json
+      description: Get top-level folders and files for a library to render the tree
+        root
+      operationId: get-library-root-contents
+      parameters:
+      - description: Library ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_storage_controller_restapi_v1.TreeContents'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get library root contents
+      tags:
+      - libraries
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

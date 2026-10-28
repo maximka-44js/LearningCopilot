@@ -1,0 +1,51 @@
+# Бинарные файлы и артефакты сборки
+bin/
+dist/
+out/
+obj/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Локальные переменные окружения и секреты
+.env
+.env.*
+!.env.example
+!.env.dev.example
+!.env.prod.example
+*.pem
+*.key
+*.pub
+
+# Логи и временные файлы
+*.log
+*.tmp
+*.bak
+.tmp/
+pid
+io.txt
+
+# Зависимости (если не используется vendor-режим)
+# vendor/
+
+# Настройки популярных IDE
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Markdown files
+*.md
+
+app
+worker
+migrate

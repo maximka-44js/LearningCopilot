@@ -1,0 +1,65 @@
+---
+title: Markdown
+description: MDX and GFM examples
+---
+
+# Markdown
+
+## MDX
+
+With Nextra, all `.mdx` files under the `content` directory are rendered with
+[MDX](https://mdxjs.com/about). It supports Markdown plus React components.
+
+For example:
+
+```mdx
+## Hello MDX
+
+import { useState } from 'react'
+
+export function Counter({ children }) {
+  const [count, setCount] = useState(0)
+  return (
+    <button onClick={() => setCount(prev => prev + 1)}>
+      {children}
+      {count}
+    </button>
+  )
+}
+
+<Counter>**Clicks**: </Counter>
+```
+
+## GitHub Flavored Markdown
+
+GFM adds support for strikethrough, task lists, tables, and more.
+
+### Strikethrough
+
+~~removed~~
+
+### Task list
+
+- [x] Write the press release
+- [ ] Update the website
+- [ ] Contact the media
+
+### Table
+
+| Syntax        | Description |   Test Text |
+| :------------ | :---------: | ----------: |
+| Header        |    Title    | Here's this |
+| Paragraph     |    Text     |    And more |
+| Strikethrough |             |    ~~Text~~ |
+
+### Autolinks
+
+Visit https://nextjs.org.
+
+### Custom heading id
+
+You can set a custom heading id like this:
+
+```md
+## Long heading about Nextra [#about-nextra]
+```

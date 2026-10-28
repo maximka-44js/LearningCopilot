@@ -1,0 +1,24 @@
+---
+title: Architecture
+description: High-level app architecture
+---
+
+# Architecture
+
+## Routing
+
+- App Router lives in src/app
+- Protected routes are under src/app/(protected)
+- Documentation lives under src/app/docs and content/docs
+
+## Features
+
+- Feature modules live in src/features
+- Shared UI components live in src/components
+- Shared utilities are in src/lib
+
+## Docs stack
+
+- Nextra v4 with nextra-theme-docs
+- Content source files in content/docs
+- Sidebar generated from page map

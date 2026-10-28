@@ -1,0 +1,43 @@
+---
+sidebarTitle: Get Started
+---
+
+import { Steps } from "nextra/components"
+
+# Docs Theme
+
+Nextra Docs Theme is a theme that includes almost everything you need to build a
+modern documentation website. It includes:
+
+- a top navigation bar
+- a search bar
+- a pages sidebar
+- a table of contents (TOC)
+- and other built-in components
+
+> This section follows the Nextra docs structure and is adapted for this project.
+
+## Start as a New Project
+
+<Steps>
+### Install
+
+To create a Nextra Docs site manually, you install **Next.js**, **React**,
+**Nextra**, and **Nextra Docs Theme**.
+
+```sh
+npm i next react react-dom nextra nextra-theme-docs
+```
+
+> If Next.js is already installed, only install `nextra` and `nextra-theme-docs`.
+
+### App Layout
+
+For App Router, use a layout with `Layout`, `Navbar`, `Footer`, and `getPageMap()`
+from Nextra.
+
+### Content
+
+Put your docs pages inside the `content` directory and control sidebar order with
+`meta.json`.
+</Steps>

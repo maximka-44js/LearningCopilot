@@ -1,0 +1,125 @@
+name: Deploy production
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      deploy_sha:
+        description: "Full commit SHA to deploy (must already have a successful CI run)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    environment:
+      name: production
+    steps:
+      - name: Validate deployment secrets
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_APP_DIR: ${{ secrets.VPS_APP_DIR }}
+        run: |
+          set -eu
+          [ -n "$VPS_SSH_KEY" ] || { echo "Required production secret is empty: VPS_SSH_KEY" >&2; exit 1; }
+          [ -n "$VPS_KNOWN_HOSTS" ] || { echo "Required production secret is empty: VPS_KNOWN_HOSTS" >&2; exit 1; }
+          [ -n "$VPS_HOST" ] || { echo "Required production secret is empty: VPS_HOST" >&2; exit 1; }
+          [ -n "$VPS_USER" ] || { echo "Required production secret is empty: VPS_USER" >&2; exit 1; }
+          [ -n "$VPS_APP_DIR" ] || { echo "Required production secret is empty: VPS_APP_DIR" >&2; exit 1; }
+          case "$VPS_SSH_KEY" in
+            *"BEGIN OPENSSH PRIVATE KEY"*|*"BEGIN RSA PRIVATE KEY"*) ;;
+            *)
+              echo "VPS_SSH_KEY must contain an unencrypted PEM/OpenSSH private key" >&2
+              exit 1
+              ;;
+          esac
+          key_file="$RUNNER_TEMP/vps_cicd_key"
+          trap 'rm -f "$key_file"' EXIT
+          printf '%s\n' "$VPS_SSH_KEY" > "$key_file"
+          chmod 600 "$key_file"
+          if ! ssh-keygen -y -P "" -f "$key_file" >/dev/null 2>&1; then
+            echo "VPS_SSH_KEY is encrypted or invalid; use a dedicated key without passphrase" >&2
+            exit 1
+          fi
+
+      - name: Install SSH key
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -eu
+          eval "$(ssh-agent -s)"
+          printf '%s\n' "$VPS_SSH_KEY" | ssh-add -
+          {
+            echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
+            echo "SSH_AGENT_PID=$SSH_AGENT_PID"
+          } >> "$GITHUB_ENV"
+
+      - name: Configure SSH host verification
+        env:
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy current commit
+        env:
+          VPS_APP_DIR: ${{ secrets.VPS_APP_DIR }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          DEPLOY_SHA: >-
+            ${{ github.event_name == 'workflow_run' &&
+            github.event.workflow_run.head_sha || inputs.deploy_sha }}
+        run: |
+          set -eu
+          printf '%s\n' "$DEPLOY_SHA" | grep -Eq '^[0-9a-f]{40}$' || {
+            echo "DEPLOY_SHA must be a full commit SHA" >&2
+            exit 1
+          }
+          ssh -A "$VPS_USER@$VPS_HOST" bash -s -- "$VPS_APP_DIR" "$DEPLOY_SHA" <<'REMOTE'
+          set -eu
+          app_dir="$1"
+          deploy_sha="$2"
+          cd "$app_dir"
+          git fetch origin main
+          git cat-file -e "$deploy_sha^{commit}"
+          git checkout --detach "$deploy_sha"
+          cd code/backend
+          make preflight-prod
+          make compose-up-prod
+          compose=(docker compose --env-file .env.prod -f docker-compose.prod.yml)
+          app_health=""
+          for _ in $(seq 1 30); do
+            app_health="$(docker inspect --format '{{.State.Health.Status}}' app 2>/dev/null || true)"
+            if [ "$app_health" = "healthy" ]; then
+              break
+            fi
+            sleep 2
+          done
+          "${compose[@]}" ps
+          if [ "$app_health" != "healthy" ]; then
+            echo "Backend container did not become healthy" >&2
+            exit 1
+          fi
+          REMOTE
