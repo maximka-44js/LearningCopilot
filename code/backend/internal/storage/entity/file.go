@@ -4,13 +4,15 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	d "github.com/maximka-44js/lc/internal/app/domain"
 )
 
 const (
-	maxFileNameLength = 40
+	maxFileNameLength = 255
 	maxFileSizeBytes  = int64(500 * 1024 * 1024)
 )
 
@@ -29,21 +31,6 @@ const (
 var (
 	reSHA256 = regexp.MustCompile(`^[A-Fa-f0-9]{64}$`)
 
-	allowedExactMimeTypes = map[string]struct{}{
-		"application/pdf":    {},
-		"application/msword": {},
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.document": {},
-		"application/vnd.ms-excel": {},
-		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":         {},
-		"application/vnd.ms-powerpoint":                                             {},
-		"application/vnd.openxmlformats-officedocument.presentationml.presentation": {},
-		"text/plain":       {},
-		"text/markdown":    {},
-		"text/csv":         {},
-		"application/json": {},
-		"application/xml":  {},
-		"application/zip":  {},
-	}
 )
 
 // File -.
@@ -138,17 +125,21 @@ func (f *File) ValidateStatusTransition(next FileStatus) error {
 
 func (f *File) validateName() error {
 	name := strings.TrimSpace(f.Name)
-	if len(name) == 0 || len(name) > maxFileNameLength {
+	if !utf8.ValidString(name) || utf8.RuneCountInString(name) == 0 || utf8.RuneCountInString(name) > maxFileNameLength {
 		return d.NewValidationError(
 			CodeFileNameInvalid,
-			"File name must contain between 1 and 40 symbols",
+			"File name must contain between 1 and 255 symbols",
 		)
-	} else if !reSafeTitle.MatchString(name) {
-		return d.NewValidationError(
-			CodeFileNameInvalid,
-			"File name can only contain letters, numbers, spaces, dashes and underscores",
-		)
-	} else if name == "." || name == ".." {
+	}
+	for _, char := range name {
+		if unicode.IsControl(char) || char == '/' || char == '\\' {
+			return d.NewValidationError(
+				CodeFileNameInvalid,
+				"File name cannot contain control characters or path separators",
+			)
+		}
+	}
+	if name == "." || name == ".." {
 		return d.NewValidationError(
 			CodeFileNameInvalid,
 			"File name cannot be '.' or '..'",
@@ -199,16 +190,7 @@ func (f *File) validateSize() error {
 func (f *File) validateMimeType() error {
 	mimeType := strings.TrimSpace(f.MimeType)
 	if mimeType == "" {
-		return d.NewValidationError(
-			CodeFileTypeInvalid,
-			"File mime_type is required",
-		)
-	}
-	if !isAllowedMimeType(mimeType) {
-		return d.NewValidationError(
-			CodeFileTypeInvalid,
-			"File mime_type is not allowed",
-		)
+		f.MimeType = "application/octet-stream"
 	}
 	return nil
 }
@@ -278,14 +260,6 @@ func (f *File) validateTime() error {
 		)
 	}
 	return nil
-}
-
-func isAllowedMimeType(mimeType string) bool {
-	if strings.HasPrefix(mimeType, "image/") {
-		return true
-	}
-	_, ok := allowedExactMimeTypes[mimeType]
-	return ok
 }
 
 func isFileStatusValid(status FileStatus) bool {

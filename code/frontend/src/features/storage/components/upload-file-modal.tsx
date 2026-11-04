@@ -51,45 +51,6 @@ const CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-const ALLOWED_MIME_TYPES = new Set([
-  "application/pdf",
-  "text/plain",
-  "text/markdown",
-  "text/csv",
-  "application/json",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "application/vnd.ms-powerpoint",
-  "text/html",
-]);
-
-const ALLOWED_EXTENSIONS = new Set([
-  "pdf",
-  "txt",
-  "md",
-  "markdown",
-  "csv",
-  "json",
-  "doc",
-  "docx",
-  "xls",
-  "xlsx",
-  "ppt",
-  "pptx",
-  "html",
-]);
-
-function getFileExtension(fileName: string) {
-  const parts = fileName.split(".");
-  if (parts.length < 2) {
-    return "";
-  }
-  return parts.at(-1)?.toLowerCase() ?? "";
-}
-
 function formatUploadErrorByStatus(status?: number) {
   if (status === 400) {
     return "Некорректные данные загрузки. Проверьте файл и параметры.";
@@ -385,18 +346,6 @@ const uploadFormSchema = z
         code: z.ZodIssueCode.custom,
         path: ["file"],
         message: "File is too large. Maximum size is 500 MB.",
-      });
-    }
-
-    const extension = getFileExtension(value.file.name);
-    const isMimeAllowed = value.file.type ? ALLOWED_MIME_TYPES.has(value.file.type) : false;
-    const isExtensionAllowed = extension ? ALLOWED_EXTENSIONS.has(extension) : false;
-
-    if (!isMimeAllowed && !isExtensionAllowed) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["file"],
-        message: "Unsupported file type.",
       });
     }
 
