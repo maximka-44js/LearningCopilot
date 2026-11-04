@@ -174,7 +174,7 @@ func (uc *UseCase) Delete(ctx context.Context, in usecase.RevokeAPIKeyInput) err
 	if err != nil {
 		return err
 	}
-	if !apiKey.IsRevokedAt(time.Now().UTC()) {
+	if apiKey.RevokedAt == nil {
 		return d.NewValidationError(entity.CodeAPIKeyInvalid, "API key must be revoked before deletion")
 	}
 
