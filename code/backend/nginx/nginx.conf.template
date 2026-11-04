@@ -123,6 +123,16 @@ server
     ssl_certificate /etc/letsencrypt/live/${PUBLIC_DOMAIN}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${PUBLIC_DOMAIN}/privkey.pem;
 
+    location = /admin
+    {
+        return 404;
+    }
+
+    location ^~ /admin/
+    {
+        return 404;
+    }
+
     location /
     {
         set $keycloak_upstream keycloak:8080;
