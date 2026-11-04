@@ -311,6 +311,7 @@ async function uploadBinaryPart(
 async function abortUpload(fileId: string, uploadId: string) {
   await orvalAxios<unknown>(`/storage/files/${fileId}/abort`, {
     method: "POST",
+    skipAuthRedirect: true,
     headers: {
       "Content-Type": "application/json",
     },
