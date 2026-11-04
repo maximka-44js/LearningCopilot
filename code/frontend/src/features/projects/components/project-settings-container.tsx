@@ -243,15 +243,15 @@ export default function ProjectSettingsContainer({
         queryKey: getListProjectsQueryKey(),
       });
       toast({
-        title: "Project deleted",
-        description: "The project and its settings were removed.",
+        title: "Проект удалён",
+        description: "Проект и его настройки удалены.",
       });
       router.push("/projects");
     },
     onError: () => {
       toast({
-        title: "Project not deleted",
-        description: "Unable to delete the project right now.",
+        title: "Проект не удалён",
+        description: "Не удалось удалить проект.",
         variant: "error",
       });
     },
@@ -267,10 +267,10 @@ export default function ProjectSettingsContainer({
     const parsed = projectSchema.safeParse(projectState.values);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
-      const message = issue?.message ?? "Check the form values.";
+      const message = issue?.message ?? "Проверьте значения в форме.";
       setProjectError(message);
       toast({
-        title: "Project settings invalid",
+        title: "Некорректные настройки проекта",
         description: message,
         variant: "error",
       });
@@ -303,10 +303,10 @@ export default function ProjectSettingsContainer({
 
       const status = getOrvalStatus(response);
       if (status && status !== 200) {
-        setProjectError("Project could not be updated.");
+        setProjectError("Не удалось обновить проект.");
         toast({
-          title: "Project not saved",
-          description: "Server rejected the update.",
+          title: "Проект не сохранён",
+          description: "Сервер отклонил обновление.",
           variant: "error",
         });
         return;
@@ -317,14 +317,14 @@ export default function ProjectSettingsContainer({
         initial: { ...current.values },
       }));
       toast({
-        title: "Project updated",
-        description: "Your project details were saved.",
+        title: "Проект обновлён",
+        description: "Данные проекта сохранены.",
       });
     } catch (error) {
-      setProjectError("Project could not be updated.");
+      setProjectError("Не удалось обновить проект.");
       toast({
-        title: "Project not saved",
-        description: "Something went wrong while saving.",
+        title: "Проект не сохранён",
+        description: "При сохранении произошла ошибка.",
         variant: "error",
       });
     }
@@ -347,8 +347,8 @@ export default function ProjectSettingsContainer({
       const parsed = toNumberOrUndefined(rawValue);
       if (rawValue.trim() !== "" && parsed === undefined) {
         toast({
-          title: "Invalid number",
-          description: `Check ${label} → ${key}.`,
+          title: "Некорректное число",
+          description: `Проверьте поле «${key}» в разделе «${label}».`,
           variant: "error",
         });
         return;
@@ -365,12 +365,20 @@ export default function ProjectSettingsContainer({
             ? recommendationSchema
             : riskSchema;
 
+    const sectionTitle =
+      label === "Aggregation"
+        ? "Агрегация"
+        : label === "Calibration"
+          ? "Калибровка"
+          : label === "Recommendation"
+            ? "Рекомендации"
+            : "Риски";
     const validation = schema.safeParse(payload);
     if (!validation.success) {
       const issue = validation.error.issues[0];
       toast({
-        title: `${label} has invalid values`,
-        description: issue?.message ?? "Check the fields and try again.",
+        title: `Некорректные значения: ${sectionTitle}`,
+        description: issue?.message ?? "Проверьте поля и попробуйте ещё раз.",
         variant: "error",
       });
       return;
@@ -381,21 +389,21 @@ export default function ProjectSettingsContainer({
       const status = getOrvalStatus(response);
       if (status && status !== 200) {
         toast({
-          title: `${label} not saved`,
-          description: "Server rejected the update.",
+          title: `${sectionTitle} не сохранены`,
+          description: "Сервер отклонил обновление.",
           variant: "error",
         });
         return;
       }
       setSection({ values: { ...section.values }, initial: { ...section.values } });
       toast({
-        title: `${label} saved`,
-        description: "Project policy overrides were updated.",
+        title: `${sectionTitle} сохранены`,
+        description: "Переопределения политик проекта обновлены.",
       });
     } catch (error) {
       toast({
-        title: `${label} not saved`,
-        description: "Something went wrong while saving.",
+        title: `${sectionTitle} не сохранены`,
+        description: "При сохранении произошла ошибка.",
         variant: "error",
       });
     }
@@ -434,7 +442,7 @@ export default function ProjectSettingsContainer({
   if (isProjectLoading) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading project settings...
+        Загрузка настроек проекта...
       </div>
     );
   }
@@ -442,7 +450,7 @@ export default function ProjectSettingsContainer({
   if (hasProjectError) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-        Unable to load this project right now.
+        Не удалось загрузить проект. Попробуйте ещё раз позже.
       </div>
     );
   }
@@ -451,13 +459,13 @@ export default function ProjectSettingsContainer({
     <section className="space-y-10">
       <header className="space-y-3">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-          Project settings
+          Настройки проекта
         </p>
         <h1 className="text-3xl font-semibold">
-          {project?.name || "Project settings"}
+          {project?.name || "Настройки проекта"}
         </h1>
         <p className="max-w-2xl text-sm text-slate-400">
-          Manage policies, core fields, and lifecycle controls for this project.
+          Управляйте политиками, основными данными и статусом проекта.
         </p>
       </header>
 
@@ -472,7 +480,7 @@ export default function ProjectSettingsContainer({
           }
           className="flex w-full items-center justify-between text-left text-sm font-semibold text-slate-100"
         >
-          <span>Project profile</span>
+          <span>Профиль проекта</span>
           <span className="text-lg text-slate-400">
             {sectionsOpen.profile ? "-" : "+"}
           </span>
@@ -507,9 +515,9 @@ export default function ProjectSettingsContainer({
             className="flex w-full items-center justify-between text-left"
           >
             <div>
-              <h2 className="text-sm font-semibold text-slate-100">Policy overrides</h2>
+              <h2 className="text-sm font-semibold text-slate-100">Настройки политик</h2>
               <p className="text-sm text-slate-400">
-                Adjust policy weights and thresholds for this specific project.
+                Отдельные веса и пороги для этого проекта.
               </p>
             </div>
             <span className="text-lg text-slate-400">
@@ -520,17 +528,17 @@ export default function ProjectSettingsContainer({
         {sectionsOpen.policies ? (
           policiesLoading ? (
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-8 text-sm text-slate-400">
-              Loading project policies...
+              Загрузка политик проекта...
             </div>
           ) : policiesError || !policies ? (
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-8 text-sm text-rose-200">
-              Unable to load project policies.
+              Не удалось загрузить политики проекта.
             </div>
           ) : (
             <div className="grid gap-6 lg:grid-cols-2">
             <ProjectPolicySection
-              title="Aggregation"
-              description="Controls how priorities and deadlines shape readiness."
+              title="Агрегация"
+              description="Определяет влияние приоритетов и сроков на готовность."
               values={aggregation.values as Record<string, string>}
               onChange={(key, value) =>
                 setAggregation((current) => ({
@@ -553,8 +561,8 @@ export default function ProjectSettingsContainer({
               dirty={isDirty(aggregation)}
             />
             <ProjectPolicySection
-              title="Calibration"
-              description="Tunes how we correct overconfidence vs results."
+              title="Калибровка"
+              description="Настраивает коррекцию уверенности по результатам."
               values={calibration.values as Record<string, string>}
               onChange={(key, value) =>
                 setCalibration((current) => ({
@@ -577,8 +585,8 @@ export default function ProjectSettingsContainer({
               dirty={isDirty(calibration)}
             />
             <ProjectPolicySection
-              title="Recommendation"
-              description="Configures thresholds for recommendation selection."
+              title="Рекомендации"
+              description="Настраивает пороги выбора рекомендаций."
               values={recommendation.values as Record<string, string>}
               onChange={(key, value) =>
                 setRecommendation((current) => ({
@@ -601,8 +609,8 @@ export default function ProjectSettingsContainer({
               dirty={isDirty(recommendation)}
             />
             <ProjectPolicySection
-              title="Risk"
-              description="Policy rules for risk thresholds and gating."
+              title="Риски"
+              description="Правила порогов и ограниченных контекстов по рискам."
               values={risk.values as Record<string, string>}
               onChange={(key, value) =>
                 setRisk((current) => ({
@@ -632,7 +640,7 @@ export default function ProjectSettingsContainer({
           }
           className="flex w-full items-center justify-between text-left text-sm font-semibold text-slate-100"
         >
-          <span>Project status</span>
+          <span>Статус проекта</span>
           <span className="text-lg text-slate-400">
             {sectionsOpen.status ? "-" : "+"}
           </span>

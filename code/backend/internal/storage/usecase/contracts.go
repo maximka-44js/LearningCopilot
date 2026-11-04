@@ -10,9 +10,14 @@ import (
 
 type (
 	Library interface {
-		Create(ctx context.Context, userID, title, description string, public bool, accesses []entity.LibraryAccess) (entity.Library, error)
+		Create(ctx context.Context, userID, ownerUsername, title, description string, public bool, accesses []entity.LibraryAccess) (entity.Library, error)
 		GetByID(ctx context.Context, userID, libID string) (entity.Library, error)
 		List(ctx context.Context, userID string) ([]entity.Library, error)
+		ListPublic(ctx context.Context, userID, search, sort string, limit, offset int) (entity.PublicLibrariesPage, error)
+		StarPublic(ctx context.Context, userID, libID string) error
+		UnstarPublic(ctx context.Context, userID, libID string) error
+		AddPublic(ctx context.Context, userID, libID string) (entity.Library, error)
+		RemovePublic(ctx context.Context, userID, libID string) error
 		Update(ctx context.Context, userID, libID, title, description string, public bool, accesses []entity.LibraryAccess) (entity.Library, error)
 		RequestCompress(ctx context.Context, userID, libID string) error
 		Delete(ctx context.Context, userID, libID string) (entity.Library, error)

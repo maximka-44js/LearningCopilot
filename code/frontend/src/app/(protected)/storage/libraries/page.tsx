@@ -9,12 +9,12 @@ export default async function StorageLibrariesPage() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
         <header className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-            Storage
+            Материалы
           </p>
-          <h1 className="text-3xl font-semibold">Libraries</h1>
+          <h1 className="text-3xl font-semibold">Библиотеки</h1>
           <p className="max-w-2xl text-sm text-slate-400">
-            Browse your document libraries, access level, and visibility in one
-            place.
+            Управляйте учебными материалами, доступом и видимостью библиотек
+            в одном месте.
           </p>
         </header>
 

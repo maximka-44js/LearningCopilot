@@ -23,7 +23,7 @@ type ProjectCardProps = {
 };
 
 export default function ProjectCard({ href, project, className }: ProjectCardProps) {
-  const description = project.description?.trim() || "No description";
+  const description = project.description?.trim() || "Нет описания";
 
   return (
     <Card className={cn("transition hover:border-slate-700/80", className)}>
@@ -33,11 +33,16 @@ export default function ProjectCard({ href, project, className }: ProjectCardPro
       >
         <CardHeader className="space-y-3">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-2">
-              <CardTitle className="flex flex-wrap items-center gap-2 text-[1.4rem]">
-                {project.name || "Untitled project"}
+            <div className="min-w-0 flex-1 space-y-2">
+              <CardTitle className="flex min-w-0 items-center gap-2 text-[1.4rem]">
+                <span
+                  className="min-w-0 truncate"
+                  title={project.name || "Проект без названия"}
+                >
+                  {project.name || "Проект без названия"}
+                </span>
                 {project.metadata?.track ? (
-                  <span className="rounded-full border border-slate-800/70 bg-slate-900/60 px-2 py-0.5 text-[0.7rem] uppercase tracking-[0.2em] text-slate-300">
+                  <span className="shrink-0 rounded-full border border-slate-800/70 bg-slate-900/60 px-2 py-0.5 text-[0.7rem] uppercase tracking-[0.2em] text-slate-300">
                     {project.metadata.track}
                   </span>
                 ) : null}
@@ -59,10 +64,10 @@ export default function ProjectCard({ href, project, className }: ProjectCardPro
                     statusDotClass(project.status)
                   )}
                 />
-                Status: {formatLabel(project.status)}
+                Статус: {formatLabel(project.status)}
               </span>
               <span className="rounded-md border border-slate-800/70 bg-slate-900/60 px-2 py-1 text-slate-200">
-                Priority: {formatLabel(project.priority)}
+                Приоритет: {formatLabel(project.priority)}
               </span>
             </div>
           </div>
@@ -70,32 +75,32 @@ export default function ProjectCard({ href, project, className }: ProjectCardPro
         <CardContent className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Metric
-              label="Readiness"
+              label="Готовность"
               value={formatPercent(project.readiness)}
               tone={metricTone(project.readiness)}
               progress={project.readiness}
             />
             <Metric
-              label="Coverage"
+              label="Охват"
               value={formatPercent(project.coverage)}
               tone={metricTone(project.coverage)}
               progress={project.coverage}
             />
             <Metric
-              label="Risk"
+              label="Риск"
               value={formatLabel(project.risk)}
               tone={riskTone(project.risk)}
             />
             <Metric
-              label="Deadline"
+              label="Дедлайн"
               value={formatDate(project.deadline_at)}
               tone="slate"
             />
           </div>
           <div className="flex flex-wrap gap-6 text-[0.95rem] text-slate-400">
-            <span>Created: {formatDate(project.created_at)}</span>
-            <span>Updated: {formatDate(project.updated_at)}</span>
-            <span>Archived: {formatDate(project.archived_at)}</span>
+            <span>Создан: {formatDate(project.created_at)}</span>
+            <span>Изменён: {formatDate(project.updated_at)}</span>
+            <span>Архивирован: {formatDate(project.archived_at)}</span>
           </div>
         </CardContent>
       </Link>

@@ -15,9 +15,9 @@ export default function ProjectDangerZoneCard({
     <Card className="border-rose-500/40">
       <CardHeader className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <CardTitle className="text-rose-100">Danger zone</CardTitle>
+          <CardTitle className="text-rose-100">Опасная зона</CardTitle>
           <CardDescription>
-            Deleting a project removes its policies and history permanently.
+            Удаление проекта навсегда удалит его политики и историю.
           </CardDescription>
         </div>
         <Button
@@ -35,13 +35,13 @@ export default function ProjectDangerZoneCard({
             aria-hidden="true"
             className="h-4 w-4 opacity-70"
           />
-          {deleting ? "Deleting" : "Delete project"}
+          {deleting ? "Удаление..." : "Удалить проект"}
         </Button>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-rose-200">
-          This action cannot be undone. Consider archiving if you might need it
-          later.
+          Это действие нельзя отменить. Если проект может понадобиться позже,
+          лучше его архивировать.
         </p>
       </CardContent>
     </Card>

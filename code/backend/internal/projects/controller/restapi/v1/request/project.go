@@ -8,7 +8,7 @@ import (
 
 // CreateProject -.
 type CreateProject struct {
-	Name        string                 `json:"name" validate:"required,max=200" example:"Prepare for microbiology exam"`
+	Name        string                 `json:"name" validate:"required,max=40" example:"Prepare for microbiology exam"`
 	Description string                 `json:"description" validate:"max=4000" example:"Weekly study plan with milestones"`
 	DeadlineAt  *time.Time             `json:"deadline_at,omitempty" example:"2026-12-31T23:59:59Z"`
 	Priority    entity.ProjectPriority `json:"priority" validate:"required,oneof=low normal high" example:"normal"`
@@ -27,7 +27,7 @@ type GetProjectByID struct {
 
 // UpdateProject -.
 type UpdateProject struct {
-	Name        string                 `json:"name" validate:"required,max=200" example:"Prepare for microbiology exam"`
+	Name        string                 `json:"name" validate:"required,max=40" example:"Prepare for microbiology exam"`
 	Description string                 `json:"description" validate:"max=4000" example:"Updated plan after diagnostics"`
 	DeadlineAt  *time.Time             `json:"deadline_at,omitempty" example:"2026-12-31T23:59:59Z"`
 	Priority    entity.ProjectPriority `json:"priority" validate:"required,oneof=low normal high" example:"high"`

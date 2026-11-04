@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import type { ProjectFormValues } from "@/features/projects/components/settings/project-settings-utils";
 import { inputClassName } from "@/features/projects/components/settings/project-settings-utils";
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
 
 type ProjectProfileCardProps = {
   values: ProjectFormValues;
@@ -30,26 +31,27 @@ export default function ProjectProfileCard({
     <Card>
       <CardHeader className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <CardTitle>Project profile</CardTitle>
+          <CardTitle>Профиль проекта</CardTitle>
           <CardDescription>
-            Name, priority, deadline, and metadata shared across the workspace.
+            Название, приоритет, дедлайн и направление проекта.
           </CardDescription>
         </div>
         <Button size="sm" onClick={onSave} disabled={saving || !dirty}>
-          {saving ? "Saving" : "Save"}
+          {saving ? "Сохранение..." : "Сохранить"}
         </Button>
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="grid gap-2">
-          <label className="text-sm text-slate-300">Name</label>
+          <label className="text-sm text-slate-300">Название</label>
           <input
             value={values.name}
             onChange={(event) => onChange({ name: event.target.value })}
             className={inputClassName}
+            maxLength={ENTITY_TITLE_MAX_LENGTH}
           />
         </div>
         <div className="grid gap-2">
-          <label className="text-sm text-slate-300">Description</label>
+          <label className="text-sm text-slate-300">Описание</label>
           <textarea
             value={values.description}
             onChange={(event) => onChange({ description: event.target.value })}
@@ -58,7 +60,7 @@ export default function ProjectProfileCard({
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-2">
-            <label className="text-sm text-slate-300">Deadline</label>
+            <label className="text-sm text-slate-300">Дедлайн</label>
             <input
               type="datetime-local"
               value={values.deadline}
@@ -69,7 +71,7 @@ export default function ProjectProfileCard({
             />
           </div>
           <div className="grid gap-2">
-            <label className="text-sm text-slate-300">Priority</label>
+            <label className="text-sm text-slate-300">Приоритет</label>
             <select
               value={values.priority}
               onChange={(event) =>
@@ -79,19 +81,19 @@ export default function ProjectProfileCard({
               }
               className={inputClassName}
             >
-              <option value="high">High</option>
-              <option value="normal">Normal</option>
-              <option value="low">Low</option>
+              <option value="high">Высокий</option>
+              <option value="normal">Обычный</option>
+              <option value="low">Низкий</option>
             </select>
           </div>
         </div>
         <div className="grid gap-2">
-          <label className="text-sm text-slate-300">Metadata track</label>
+          <label className="text-sm text-slate-300">Направление</label>
           <input
             value={values.metadataTrack}
             onChange={(event) => onChange({ metadataTrack: event.target.value })}
             className={inputClassName}
-            placeholder="biology"
+            placeholder="например, биология"
           />
         </div>
         {error ? <p className="text-sm text-rose-200">{error}</p> : null}

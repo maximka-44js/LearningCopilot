@@ -7,7 +7,7 @@ type GetFolderByID struct {
 type CreateFolder struct {
 	LibID    string `json:"lib_id"    validate:"required,uuid4"  example:"123e4567-e89b-12d3-a456-426614174000"`
 	ParentID string `json:"parent_id" validate:"omitempty,uuid4" example:"123e4567-e89b-12d3-a456-426614174000"`
-	Name     string `json:"name"      validate:"required,max=100" example:"Project docs"`
+	Name     string `json:"name"      validate:"required,max=40" example:"Project docs"`
 }
 
 type UpdateFolderParams struct {
@@ -16,7 +16,7 @@ type UpdateFolderParams struct {
 
 type UpdateFolder struct {
 	ParentID string `json:"parent_id" validate:"omitempty,uuid4" example:"123e4567-e89b-12d3-a456-426614174000"`
-	Name     string `json:"name"      validate:"required,max=100" example:"Project docs"`
+	Name     string `json:"name"      validate:"required,max=40" example:"Project docs"`
 }
 
 type DeleteFolderParams struct {
@@ -29,5 +29,5 @@ type CopyFolderParams struct {
 
 type CopyFolder struct {
 	TargetParentID string `json:"target_parent_id,omitempty" validate:"omitempty,uuid4" example:"123e4567-e89b-12d3-a456-426614174000"`
-	Name           string `json:"name,omitempty" validate:"omitempty,max=100" example:"Project docs copy"`
+	Name           string `json:"name,omitempty" validate:"omitempty,max=40" example:"Project docs copy"`
 }

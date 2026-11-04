@@ -11,6 +11,8 @@ import {
 } from "@/generated/api/projects/projects";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/providers/toast-provider";
+import { getApiErrorMessage } from "@/lib/api-error-message";
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
 import {
   Card,
   CardContent,
@@ -39,14 +41,18 @@ type CreateProjectFormProps = {
 };
 
 const createProjectSchema = z.object({
-  name: z.string().trim().min(1, "Name is required.").max(200),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Введите название проекта.")
+    .max(ENTITY_TITLE_MAX_LENGTH, `Название не должно превышать ${ENTITY_TITLE_MAX_LENGTH} символов.`),
   description: z.string().trim().max(4000).optional().or(z.literal("")),
   deadline: z
     .string()
     .optional()
     .refine(
       (value) => !value || !Number.isNaN(Date.parse(value)),
-      "Deadline must be a valid date."
+      "Введите корректную дату дедлайна."
     )
     .or(z.literal("")),
   priority: z.enum(["low", "normal", "high"]),
@@ -88,10 +94,10 @@ export default function CreateProjectForm({ open, onClose }: CreateProjectFormPr
     const parsed = createProjectSchema.safeParse(form);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      const message = firstIssue?.message ?? "Invalid form values.";
+      const message = firstIssue?.message ?? "Проверьте значения в форме.";
       setErrors({ message });
       toast({
-        title: "Check the form",
+        title: "Проверьте форму",
         description: message,
         variant: "error",
       });
@@ -122,10 +128,10 @@ export default function CreateProjectForm({ open, onClose }: CreateProjectFormPr
 
       if (typeof (response as { status?: unknown }).status === "number") {
         if ((response as { status: number }).status !== 201) {
-          setErrors({ message: "Project could not be created." });
+          setErrors({ message: "Не удалось создать проект." });
           toast({
-            title: "Project not created",
-            description: "Server rejected the request.",
+            title: "Проект не создан",
+            description: "Сервер отклонил запрос.",
             variant: "error",
           });
           return;
@@ -135,15 +141,16 @@ export default function CreateProjectForm({ open, onClose }: CreateProjectFormPr
       setErrors({});
       setForm(defaultForm);
       toast({
-        title: "Project created",
-        description: "Your project is ready in the list.",
+        title: "Проект создан",
+        description: "Проект появился в списке.",
       });
       onClose();
     } catch (error) {
-      setErrors({ message: "Project could not be created." });
+      const message = getApiErrorMessage(error);
+      setErrors({ message });
       toast({
-        title: "Project not created",
-        description: "Something went wrong while saving the project.",
+        title: "Проект не создан",
+        description: message,
         variant: "error",
       });
     }
@@ -159,42 +166,43 @@ export default function CreateProjectForm({ open, onClose }: CreateProjectFormPr
         <CardHeader className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-[1.2rem]">Create project</CardTitle>
+              <CardTitle className="text-[1.2rem]">Создать проект</CardTitle>
               <CardDescription className="text-sm text-slate-400">
-                Priority, deadline, and a short description.
+                Укажите приоритет, дедлайн и краткое описание.
               </CardDescription>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
-              Close
+              Закрыть
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Name</label>
+              <label className="text-sm text-slate-300">Название</label>
               <input
                 value={form.name ?? ""}
                 onChange={(event) => handleChange("name", event.target.value)}
+                maxLength={ENTITY_TITLE_MAX_LENGTH}
                 className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
-                placeholder="Prepare for microbiology exam"
+                placeholder="Подготовка к экзамену по биологии"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Description</label>
+              <label className="text-sm text-slate-300">Описание</label>
               <textarea
                 value={form.description ?? ""}
                 onChange={(event) =>
                   handleChange("description", event.target.value)
                 }
                 className="min-h-[96px] rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-100"
-                placeholder="Weekly study plan with milestones"
+                placeholder="План подготовки по неделям с контрольными точками"
               />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Deadline</label>
+                <label className="text-sm text-slate-300">Дедлайн</label>
                 <input
                   type="datetime-local"
                   value={form.deadline ?? ""}
@@ -205,27 +213,27 @@ export default function CreateProjectForm({ open, onClose }: CreateProjectFormPr
                 />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Priority</label>
+                <label className="text-sm text-slate-300">Приоритет</label>
                 <select
                   value={form.priority ?? "normal"}
                   onChange={(event) => handleChange("priority", event.target.value)}
                   className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
                 >
-                  <option value="high">High</option>
-                  <option value="normal">Normal</option>
-                  <option value="low">Low</option>
+                  <option value="high">Высокий</option>
+                  <option value="normal">Обычный</option>
+                  <option value="low">Низкий</option>
                 </select>
               </div>
             </div>
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Metadata track</label>
+              <label className="text-sm text-slate-300">Направление</label>
               <input
                 value={form.metadataTrack ?? ""}
                 onChange={(event) =>
                   handleChange("metadataTrack", event.target.value)
                 }
                 className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
-                placeholder="biology"
+                placeholder="биология"
               />
             </div>
             {errors.message ? (
@@ -233,10 +241,10 @@ export default function CreateProjectForm({ open, onClose }: CreateProjectFormPr
             ) : null}
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create project"}
+                {isPending ? "Создание..." : "Создать проект"}
               </Button>
             </div>
           </form>

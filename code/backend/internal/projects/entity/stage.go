@@ -177,10 +177,10 @@ func (s *Stage) validateIDs() error {
 
 func (s *Stage) validateName() error {
 	name := strings.TrimSpace(s.Name)
-	if len(name) == 0 || len(name) > 160 {
+	if len(name) == 0 || len(name) > maxEntityTitleLength {
 		return d.NewValidationError(
 			CodeStageNameInvalid,
-			"Stage name must contain between 1 and 160 symbols",
+			"Stage name must contain between 1 and 40 symbols",
 		)
 	}
 	return nil

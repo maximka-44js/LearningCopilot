@@ -37,11 +37,16 @@ x-backend-app-environment: &x-backend-app-environment
   JWT_ISSUER: "${JWT_ISSUER:-http://keycloak:8080/realms/lc}"
   JWT_DISCOVERY_ISSUER: "${JWT_DISCOVERY_ISSUER:-http://keycloak:8080/realms/lc}"
   JWT_CLIENT_ID: "${JWT_CLIENT_ID:-lc-frontend}"
+  # API keys
+  API_KEYS_ENABLED: "${API_KEYS_ENABLED:-false}"
+  API_KEYS_HASH_PEPPER: "${API_KEYS_HASH_PEPPER:-}"
+  API_KEYS_MAX_PER_USER: "${API_KEYS_MAX_PER_USER:-20}"
+  API_KEYS_ROTATE_GRACE_WINDOW: "${API_KEYS_ROTATE_GRACE_WINDOW:-24h}"
 
 services:
   db:
     container_name: db
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     environment:
       <<: *x-db-environment
     volumes:

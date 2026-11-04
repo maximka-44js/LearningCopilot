@@ -35,13 +35,14 @@ func NewLibraryUseCase(r repo.LibraryRepo, jobs LibraryJobPublisher, tx TxManage
 
 func (uc *UseCase) Create(
 	ctx context.Context,
-	userID, name, description string,
+	userID, ownerUsername, name, description string,
 	public bool,
 	accesses []entity.LibraryAccess,
 ) (entity.Library, error) {
 
 	lib, err := entity.NewLibrary(uuid.New().String(),
 		userID,
+		ownerUsername,
 		name,
 		description,
 		public,
@@ -135,10 +136,10 @@ func (uc *UseCase) Delete(ctx context.Context, userID, libraryID string) (entity
 	}
 
 	if lib.UserID != userID {
-		if lib.CanWrite(userID) || lib.CanRead(userID) {
-			return entity.Library{}, d.NewForbidden(entity.CodeLibraryAccessInvalid, "access denied")
+		if err := uc.repo.RemoveUserAccess(ctx, userID, libraryID); err != nil {
+			return entity.Library{}, err
 		}
-		return entity.Library{}, d.NewNotFound(entity.CodeLibNotFound, "library not found")
+		return lib, nil
 	}
 	now := time.Now().UTC()
 	lib.DeletedAt = &now
@@ -183,4 +184,45 @@ func (uc *UseCase) RequestCompress(ctx context.Context, userID, libraryID string
 
 func (uc *UseCase) List(ctx context.Context, userID string) ([]entity.Library, error) {
 	return uc.repo.List(ctx, userID)
+}
+
+func (uc *UseCase) ListPublic(ctx context.Context, userID, search, sort string, limit, offset int) (entity.PublicLibrariesPage, error) {
+	return uc.repo.ListPublic(ctx, userID, search, sort, limit, offset)
+}
+
+func (uc *UseCase) StarPublic(ctx context.Context, userID, libraryID string) error {
+	return uc.repo.StarPublic(ctx, userID, libraryID)
+}
+
+func (uc *UseCase) UnstarPublic(ctx context.Context, userID, libraryID string) error {
+	return uc.repo.UnstarPublic(ctx, userID, libraryID)
+}
+
+func (uc *UseCase) AddPublic(ctx context.Context, userID, libraryID string) (entity.Library, error) {
+	lib, err := uc.repo.GetByID(ctx, userID, libraryID)
+	if err != nil {
+		return entity.Library{}, err
+	}
+	if !lib.Public {
+		return entity.Library{}, d.NewNotFound(entity.CodeLibNotFound, "public library not found")
+	}
+	if lib.UserID == userID {
+		return lib, nil
+	}
+
+	if err := uc.repo.AddPublicSubscription(ctx, userID, libraryID); err != nil {
+		return entity.Library{}, err
+	}
+	return lib, nil
+}
+
+func (uc *UseCase) RemovePublic(ctx context.Context, userID, libraryID string) error {
+	lib, err := uc.repo.GetByID(ctx, userID, libraryID)
+	if err != nil {
+		return err
+	}
+	if lib.UserID == userID {
+		return d.NewValidationError(entity.CodeLibraryAccessInvalid, "library owner cannot unpin their library")
+	}
+	return uc.repo.RemovePublicSubscription(ctx, userID, libraryID)
 }

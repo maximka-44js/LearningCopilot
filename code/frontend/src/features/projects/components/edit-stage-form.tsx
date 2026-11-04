@@ -16,6 +16,7 @@ import {
   useUpdateStage,
 } from "@/generated/api/stages/stages";
 import type { GithubComMaximka44jsLcInternalProjectsEntityStage as Stage } from "@/generated/model/githubComMaximka44jsLcInternalProjectsEntityStage";
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
 
 const defaultForm = {
   name: "",
@@ -39,23 +40,27 @@ type EditStageFormProps = {
 };
 
 const editStageSchema = z.object({
-  name: z.string().trim().min(1, "Name is required.").max(160),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Введите название этапа.")
+    .max(ENTITY_TITLE_MAX_LENGTH, `Название не должно превышать ${ENTITY_TITLE_MAX_LENGTH} символов.`),
   goal: z.string().trim().max(2000).optional().or(z.literal("")),
   deadline: z
     .string()
     .optional()
     .refine(
       (value) => !value || !Number.isNaN(Date.parse(value)),
-      "Deadline must be a valid date."
+      "Введите корректную дату дедлайна."
     )
     .or(z.literal("")),
   order: z
     .string()
     .trim()
-    .refine((value) => value.length > 0, "Order is required.")
-    .refine((value) => Number.isFinite(Number(value)), "Order must be a number.")
+    .refine((value) => value.length > 0, "Введите порядок этапа.")
+    .refine((value) => Number.isFinite(Number(value)), "Порядок должен быть числом.")
     .transform((value) => Number(value))
-    .refine((value) => Number.isInteger(value) && value >= 1, "Order must be >= 1."),
+    .refine((value) => Number.isInteger(value) && value >= 1, "Порядок должен быть не меньше 1."),
 });
 
 const toInputDateTime = (value?: string) => {
@@ -131,10 +136,10 @@ export default function EditStageForm({
     const parsed = editStageSchema.safeParse(form);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      const message = firstIssue?.message ?? "Invalid form values.";
+      const message = firstIssue?.message ?? "Проверьте введённые данные.";
       setErrors({ message });
       toast({
-        title: "Check the form",
+        title: "Проверьте форму",
         description: message,
         variant: "error",
       });
@@ -159,10 +164,10 @@ export default function EditStageForm({
 
       if (typeof (response as { status?: unknown }).status === "number") {
         if ((response as { status: number }).status !== 200) {
-          setErrors({ message: "Stage could not be updated." });
+          setErrors({ message: "Не удалось обновить этап." });
           toast({
-            title: "Stage not updated",
-            description: "Server rejected the request.",
+            title: "Этап не обновлён",
+            description: "Сервер отклонил запрос.",
             variant: "error",
           });
           return;
@@ -170,15 +175,15 @@ export default function EditStageForm({
       }
 
       toast({
-        title: "Stage updated",
-        description: "The stage details were saved.",
+        title: "Этап обновлён",
+        description: "Изменения этапа сохранены.",
       });
       onClose();
     } catch {
-      setErrors({ message: "Stage could not be updated." });
+      setErrors({ message: "Не удалось обновить этап." });
       toast({
-        title: "Stage not updated",
-        description: "Something went wrong while saving the stage.",
+        title: "Этап не обновлён",
+        description: "При сохранении этапа произошла ошибка.",
         variant: "error",
       });
     }
@@ -194,7 +199,7 @@ export default function EditStageForm({
         <CardHeader className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-[1.2rem]">Edit stage</CardTitle>
+              <CardTitle className="text-[1.2rem]">Изменить этап</CardTitle>
               <CardDescription className="text-sm text-slate-400">
                 Update name, order, and optional goal or deadline.
               </CardDescription>
@@ -207,29 +212,30 @@ export default function EditStageForm({
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Name</label>
+              <label className="text-sm text-slate-300">Название</label>
               <input
                 value={form.name}
                 onChange={(event) => handleChange("name", event.target.value)}
+                maxLength={ENTITY_TITLE_MAX_LENGTH}
                 className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
-                placeholder="Cell biology"
+                placeholder="Клеточная биология"
                 required
               />
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Goal</label>
+              <label className="text-sm text-slate-300">Цель</label>
               <textarea
                 value={form.goal}
                 onChange={(event) => handleChange("goal", event.target.value)}
                 className="min-h-[96px] rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-100"
-                placeholder="Understand structure and function of cells."
+                placeholder="Понять строение и функции клеток."
               />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Deadline</label>
+                <label className="text-sm text-slate-300">Дедлайн</label>
                 <input
                   type="datetime-local"
                   value={form.deadline}
@@ -240,7 +246,7 @@ export default function EditStageForm({
                 />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Order</label>
+                <label className="text-sm text-slate-300">Порядок</label>
                 <input
                   inputMode="numeric"
                   value={form.order}
@@ -258,10 +264,10 @@ export default function EditStageForm({
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isPending || !isDirty}>
-                {isPending ? "Saving..." : "Save changes"}
+                {isPending ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </div>
           </form>

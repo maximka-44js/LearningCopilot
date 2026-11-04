@@ -7,6 +7,8 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/providers/toast-provider";
+import { getApiErrorMessage } from "@/lib/api-error-message";
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getGetStageBoardQueryKey } from "@/generated/api/projects-read-model/projects-read-model";
 import { useAddTask } from "@/generated/api/tasks/tasks";
@@ -36,46 +38,50 @@ type CreateTaskFormProps = {
 
 const createTaskSchema = z
   .object({
-    outcome: z.string().trim().min(1, "Outcome is required.").max(2000),
+    outcome: z
+      .string()
+      .trim()
+      .min(1, "Введите результат задачи.")
+      .max(ENTITY_TITLE_MAX_LENGTH, `Название не должно превышать ${ENTITY_TITLE_MAX_LENGTH} символов.`),
     difficulty: z
       .string()
       .trim()
       .refine((value) => Number.isFinite(Number(value)), "Difficulty is required.")
       .transform((value) => Number(value))
-      .refine((value) => Number.isInteger(value) && value >= 1 && value <= 10, "Difficulty must be 1-10."),
+      .refine((value) => Number.isInteger(value) && value >= 1 && value <= 10, "Сложность должна быть от 1 до 10."),
     deadline: z
       .string()
       .optional()
       .refine(
         (value) => !value || !Number.isNaN(Date.parse(value)),
-        "Deadline must be a valid date."
+        "Укажите корректную дату дедлайна."
       )
       .or(z.literal("")),
     priority: z.enum(["low", "normal", "high"]),
     comprehensionParts: z
       .string()
       .trim()
-      .refine((value) => Number.isFinite(Number(value)), "Comprehension parts are required.")
+      .refine((value) => Number.isFinite(Number(value)), "Введите части понимания.")
       .transform((value) => Number(value))
-      .refine((value) => Number.isInteger(value) && value >= 0, "Parts must be 0 or more."),
+      .refine((value) => Number.isInteger(value) && value >= 0, "Количество частей не может быть отрицательным."),
     memorizationParts: z
       .string()
       .trim()
-      .refine((value) => Number.isFinite(Number(value)), "Memorization parts are required.")
+      .refine((value) => Number.isFinite(Number(value)), "Введите части запоминания.")
       .transform((value) => Number(value))
-      .refine((value) => Number.isInteger(value) && value >= 0, "Parts must be 0 or more."),
+      .refine((value) => Number.isInteger(value) && value >= 0, "Количество частей не может быть отрицательным."),
     practiceParts: z
       .string()
       .trim()
-      .refine((value) => Number.isFinite(Number(value)), "Practice parts are required.")
+      .refine((value) => Number.isFinite(Number(value)), "Введите части практики.")
       .transform((value) => Number(value))
-      .refine((value) => Number.isInteger(value) && value >= 0, "Parts must be 0 or more."),
+      .refine((value) => Number.isInteger(value) && value >= 0, "Количество частей не может быть отрицательным."),
   })
   .refine(
     (values) =>
       values.comprehensionParts + values.memorizationParts + values.practiceParts > 0,
     {
-      message: "At least one block must have a part.",
+      message: "Добавьте хотя бы одну часть в любой контекст.",
       path: ["comprehensionParts"],
     }
   );
@@ -170,10 +176,10 @@ export default function CreateTaskForm({
     const parsed = createTaskSchema.safeParse(form);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      const message = firstIssue?.message ?? "Invalid form values.";
+      const message = firstIssue?.message ?? "Проверьте значения в форме.";
       setErrors({ message });
       toast({
-        title: "Check the form",
+        title: "Проверьте форму",
         description: message,
         variant: "error",
       });
@@ -212,10 +218,10 @@ export default function CreateTaskForm({
 
       if (typeof (response as { status?: unknown }).status === "number") {
         if ((response as { status: number }).status !== 201) {
-          setErrors({ message: "Task could not be created." });
+          setErrors({ message: "Не удалось создать задачу." });
           toast({
-            title: "Task not created",
-            description: "Server rejected the request.",
+            title: "Задача не создана",
+            description: "Сервер отклонил запрос.",
             variant: "error",
           });
           return;
@@ -223,15 +229,16 @@ export default function CreateTaskForm({
       }
 
       toast({
-        title: "Task created",
-        description: "The task is now available in the list.",
+        title: "Задача создана",
+        description: "Задача появилась на доске.",
       });
       onClose();
-    } catch {
-      setErrors({ message: "Task could not be created." });
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      setErrors({ message });
       toast({
-        title: "Task not created",
-        description: "Something went wrong while saving the task.",
+        title: "Задача не создана",
+        description: message,
         variant: "error",
       });
     }
@@ -247,32 +254,33 @@ export default function CreateTaskForm({
         <CardHeader className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-[1.2rem]">Create task</CardTitle>
+              <CardTitle className="text-[1.2rem]">Создать задачу</CardTitle>
               <CardDescription className="text-sm text-slate-400">
-                Define outcome, priority, and readiness weights.
+                Укажите результат, приоритет и веса готовности.
               </CardDescription>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
-              Close
+              Закрыть
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Outcome</label>
+              <label className="text-sm text-slate-300">Результат</label>
               <textarea
                 value={form.outcome}
                 onChange={(event) => handleChange("outcome", event.target.value)}
+                maxLength={ENTITY_TITLE_MAX_LENGTH}
                 className="min-h-[96px] rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-100"
-                placeholder="Explain cell membrane transport principles"
+                placeholder="Объяснить принципы транспорта через мембрану клетки"
                 required
               />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Difficulty (1-10)</label>
+                <label className="text-sm text-slate-300">Сложность (1–10)</label>
                 <input
                   inputMode="numeric"
                   value={form.difficulty}
@@ -283,21 +291,21 @@ export default function CreateTaskForm({
                 />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Priority</label>
+                <label className="text-sm text-slate-300">Приоритет</label>
                 <select
                   value={form.priority}
                   onChange={(event) => handleChange("priority", event.target.value)}
                   className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
                 >
-                  <option value="high">High</option>
-                  <option value="normal">Normal</option>
-                  <option value="low">Low</option>
+                  <option value="high">Высокий</option>
+                  <option value="normal">Обычный</option>
+                  <option value="low">Низкий</option>
                 </select>
               </div>
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Deadline</label>
+              <label className="text-sm text-slate-300">Дедлайн</label>
               <input
                 type="datetime-local"
                 value={form.deadline}
@@ -310,7 +318,7 @@ export default function CreateTaskForm({
 
             <div className="grid gap-4 md:grid-cols-3">
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Comprehension parts</label>
+                <label className="text-sm text-slate-300">Части понимания</label>
                 <input
                   inputMode="numeric"
                   value={form.comprehensionParts}
@@ -323,7 +331,7 @@ export default function CreateTaskForm({
                 </span>
               </div>
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Memorization parts</label>
+                <label className="text-sm text-slate-300">Части запоминания</label>
                 <input
                   inputMode="numeric"
                   value={form.memorizationParts}
@@ -336,7 +344,7 @@ export default function CreateTaskForm({
                 </span>
               </div>
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Practice parts</label>
+                <label className="text-sm text-slate-300">Части практики</label>
                 <input
                   inputMode="numeric"
                   value={form.practiceParts}
@@ -352,11 +360,11 @@ export default function CreateTaskForm({
 
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-slate-400">Total parts: {totalParts}</span>
+                <span className="text-slate-400">Всего частей: {totalParts}</span>
                 {totalParts > 0 ? (
-                  <span className="text-emerald-300">Ready</span>
+                  <span className="text-emerald-300">Готово</span>
                 ) : (
-                  <span className="text-amber-200">Add parts to continue</span>
+                  <span className="text-amber-200">Добавьте части, чтобы продолжить</span>
                 )}
               </div>
             </div>
@@ -367,10 +375,10 @@ export default function CreateTaskForm({
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create task"}
+                {isPending ? "Создание..." : "Создать задачу"}
               </Button>
             </div>
           </form>

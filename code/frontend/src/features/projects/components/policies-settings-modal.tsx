@@ -28,14 +28,14 @@ export default function PoliciesSettingsModal({ open, onClose }: PoliciesSetting
       <Card className="w-full max-w-5xl">
         <CardHeader className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <CardTitle className="text-[1.2rem]">Policy settings</CardTitle>
+            <CardTitle className="text-[1.2rem]">Настройки политик</CardTitle>
             <p className="mt-1 text-sm text-slate-400">
-              Adjust global defaults for aggregation, calibration, recommendation,
-              and risk.
+              Настройте общие параметры агрегации, калибровки, рекомендаций и
+              рисков.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={onClose}>
-            Close
+            Закрыть
           </Button>
         </CardHeader>
         <CardContent className="space-y-6">

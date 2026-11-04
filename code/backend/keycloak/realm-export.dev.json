@@ -1,0 +1,40 @@
+{
+  "realm": "lc",
+  "enabled": true,
+  "registrationAllowed": true,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "ru",
+    "en"
+  ],
+  "defaultLocale": "ru",
+  "displayName": "LC",
+  "loginTheme": "lc-keycloak-theme",
+  "accountTheme": "lc-keycloak-theme",
+  "sslRequired": "none",
+  "clients": [
+    {
+      "clientId": "lc-frontend",
+      "name": "LC Frontend",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://frontend.lvh.me/api/auth/callback/keycloak",
+        "http://localhost:3000/api/auth/callback/keycloak"
+      ],
+      "webOrigins": [
+        "http://frontend.lvh.me",
+        "http://localhost:3000"
+      ],
+      "frontchannelLogout": true,
+      "attributes": {
+        "frontchannel.logout.url": "http://frontend.lvh.me/api/auth/frontchannel-logout",
+        "frontchannel.logout.session.required": "true",
+        "post.logout.redirect.uris": "+"
+      }
+    }
+  ]
+}

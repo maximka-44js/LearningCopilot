@@ -1,0 +1,4 @@
+ALTER TABLE user_agents
+	ADD COLUMN IF NOT EXISTS secret_ciphertext BYTEA NOT NULL DEFAULT ''::bytea,
+	ADD COLUMN IF NOT EXISTS secret_nonce BYTEA NOT NULL DEFAULT ''::bytea,
+	ADD COLUMN IF NOT EXISTS secret_key_version VARCHAR(32) NOT NULL DEFAULT 'v1';

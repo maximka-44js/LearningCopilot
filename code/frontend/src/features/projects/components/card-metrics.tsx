@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 
 export const formatDate = (value?: string) => {
-  if (!value) return "N/A";
+  if (!value) return "Нет данных";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "N/A";
-  return new Intl.DateTimeFormat("en-US", {
+  if (Number.isNaN(date.getTime())) return "Нет данных";
+  return new Intl.DateTimeFormat("ru-RU", {
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -12,13 +12,37 @@ export const formatDate = (value?: string) => {
 };
 
 export const formatPercent = (value?: number) => {
-  if (value === null || value === undefined) return "N/A";
+  if (value === null || value === undefined) return "Нет данных";
   const rounded = Math.round(value);
   return `${rounded}%`;
 };
 
 export const formatLabel = (value?: string) => {
-  if (!value) return "N/A";
+  if (!value) return "Нет данных";
+
+  const labels: Record<string, string> = {
+    active: "Активный",
+    archived: "Архивный",
+    paused: "Приостановлен",
+    critical: "Критический",
+    high: "Высокий",
+    medium: "Средний",
+    low: "Низкий",
+    normal: "Обычный",
+    backlog: "В очереди",
+    learning: "Изучение",
+    baseline_passed: "Базовый уровень пройден",
+    at_risk: "В зоне риска",
+    stable: "Стабильная",
+    exam_ready: "Готова к экзамену",
+    comprehension: "Понимание",
+    memorization: "Запоминание",
+    practice: "Практика",
+  };
+
+  if (labels[value]) {
+    return labels[value];
+  }
 
   const normalized = value
     .replace(/[_-]+/g, " ")
@@ -37,7 +61,7 @@ export const formatLabel = (value?: string) => {
 export const formatReason = (value?: string) => {
   if (!value) return "N/A";
   const trimmed = value.trim();
-  if (!trimmed) return "N/A";
+  if (!trimmed) return "Нет данных";
 
   // Only transform enum-like reasons (snake_case / kebab-case),
   // keep normal sentences as-is.

@@ -72,21 +72,56 @@ const toNumberOrUndefined = (value: string) => {
 const inputClassName =
   "h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100";
 
-const nonNegative = z.number().min(0, "Value must be 0 or higher.").optional();
+const sectionTitles = {
+  Aggregation: "Агрегация",
+  Calibration: "Калибровка",
+  Recommendation: "Рекомендации",
+  Risk: "Риски",
+} as const;
+
+const fieldTitles: Record<string, string> = {
+  priority_high_weight: "Вес высокого приоритета",
+  priority_low_weight: "Вес низкого приоритета",
+  priority_normal_weight: "Вес обычного приоритета",
+  urgency_24h_weight: "Вес срочности: 24 часа",
+  urgency_72h_weight: "Вес срочности: 72 часа",
+  urgency_7d_weight: "Вес срочности: 7 дней",
+  gap_threshold: "Порог расхождения",
+  penalty_multiplier: "Множитель штрафа",
+  acceptable_mastery_threshold: "Допустимый порог освоения",
+  calibration_gap_threshold: "Порог расхождения для калибровки",
+  low_mastery_threshold: "Порог низкого уровня освоения",
+  max_recommendations: "Максимум рекомендаций",
+  block_critical_mastery_below: "Контекст: освоение ниже критического уровня",
+  block_critical_readiness_below: "Контекст: готовность ниже критического уровня",
+  block_high_mastery_below: "Контекст: освоение ниже высокого уровня",
+  block_high_readiness_below: "Контекст: готовность ниже высокого уровня",
+  block_medium_mastery_below: "Контекст: освоение ниже среднего уровня",
+  block_medium_readiness_below: "Контекст: готовность ниже среднего уровня",
+  false_confidence_gap: "Расхождение ложной уверенности",
+  task_critical_readiness_below: "Задача: готовность ниже критического уровня",
+  task_high_readiness_below: "Задача: готовность ниже высокого уровня",
+  task_medium_readiness_below: "Задача: готовность ниже среднего уровня",
+};
+
+const nonNegative = z
+  .number()
+  .min(0, "Значение не может быть отрицательным.")
+  .optional();
 const cappedWeight = z
   .number()
-  .min(0, "Weight must be 0 or higher.")
-  .max(10, "Weight looks too large (max 10).")
+  .min(0, "Вес не может быть отрицательным.")
+  .max(10, "Вес слишком большой (максимум — 10).")
   .optional();
 const penaltyMultiplier = z
   .number()
-  .min(0, "Penalty must be 0 or higher.")
-  .max(5, "Penalty looks too large (max 5).")
+  .min(0, "Штраф не может быть отрицательным.")
+  .max(5, "Штраф слишком большой (максимум — 5).")
   .optional();
 const percent = z
   .number()
-  .min(0, "Value must be between 0 and 100.")
-  .max(100, "Value must be between 0 and 100.")
+  .min(0, "Значение должно быть от 0 до 100.")
+  .max(100, "Значение должно быть от 0 до 100.")
   .optional();
 
 const aggregationSchema = z.object({
@@ -109,9 +144,9 @@ const recommendationSchema = z.object({
   low_mastery_threshold: percent,
   max_recommendations: z
     .number()
-    .int("Must be a whole number.")
-    .min(1, "Must be at least 1.")
-    .max(10, "Max recommendations capped at 10.")
+    .int("Введите целое число.")
+    .min(1, "Значение должно быть не меньше 1.")
+    .max(10, "Максимальное количество рекомендаций — 10.")
     .optional(),
 });
 
@@ -251,8 +286,10 @@ export default function PoliciesSettingsPanel() {
       const parsed = toNumberOrUndefined(rawValue);
       if (rawValue.trim() !== "" && parsed === undefined) {
         toast({
-          title: "Invalid number",
-          description: `Check ${label} → ${key}.`,
+          title: "Некорректное число",
+          description: `Проверьте поле «${fieldTitles[key] ?? key}» в разделе «${
+            sectionTitles[label as keyof typeof sectionTitles]
+          }».`,
           variant: "error",
         });
         return;
@@ -273,8 +310,10 @@ export default function PoliciesSettingsPanel() {
     if (!validation.success) {
       const issue = validation.error.issues[0];
       toast({
-        title: `${label} has invalid values`,
-        description: issue?.message ?? "Check the fields and try again.",
+        title: `Некорректные значения: ${
+          sectionTitles[label as keyof typeof sectionTitles]
+        }`,
+        description: issue?.message ?? "Проверьте поля и попробуйте ещё раз.",
         variant: "error",
       });
       return;
@@ -285,22 +324,31 @@ export default function PoliciesSettingsPanel() {
       if (typeof (response as { status?: unknown }).status === "number") {
         if ((response as { status: number }).status !== 200) {
           toast({
-            title: `${label} not saved`,
-            description: "Server rejected the update.",
+            title: `Не удалось сохранить: ${
+              sectionTitles[label as keyof typeof sectionTitles]
+            }`,
+            description: "Сервер отклонил обновление.",
             variant: "error",
           });
           return;
         }
       }
-      setSection({ values: { ...section.values }, initial: { ...section.values } });
+      setSection({
+        values: { ...section.values },
+        initial: { ...section.values },
+      });
       toast({
-        title: `${label} saved`,
-        description: "Your policy settings were updated.",
+        title: `${
+          sectionTitles[label as keyof typeof sectionTitles]
+        } сохранены`,
+        description: "Настройки политик обновлены.",
       });
     } catch (error) {
       toast({
-        title: `${label} not saved`,
-        description: "Something went wrong while saving.",
+        title: `Не удалось сохранить: ${
+          sectionTitles[label as keyof typeof sectionTitles]
+        }`,
+        description: "При сохранении произошла ошибка.",
         variant: "error",
       });
     }
@@ -313,7 +361,7 @@ export default function PoliciesSettingsPanel() {
   if (isLoading) {
     return (
       <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-6 py-6 text-sm text-slate-400">
-        Loading policies...
+        Загрузка политик...
       </div>
     );
   }
@@ -321,7 +369,7 @@ export default function PoliciesSettingsPanel() {
   if (isError || !rawPolicies) {
     return (
       <div className="rounded-lg border border-slate-800 bg-slate-950/40 px-6 py-6 text-sm text-rose-200">
-        Unable to load policies.
+        Не удалось загрузить политики.
       </div>
     );
   }
@@ -332,10 +380,10 @@ export default function PoliciesSettingsPanel() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="text-sm font-semibold text-slate-100">
-              Aggregation
+              {sectionTitles.Aggregation}
             </h3>
             <p className="text-sm text-slate-400">
-              Controls how priorities and deadlines shape readiness.
+              Определяет, как приоритеты и сроки влияют на готовность.
             </p>
           </div>
           <Button
@@ -350,14 +398,14 @@ export default function PoliciesSettingsPanel() {
             }
             disabled={savingAggregation || !isDirty(aggregation)}
           >
-            {savingAggregation ? "Saving" : "Save"}
+            {savingAggregation ? "Сохранение..." : "Сохранить"}
           </Button>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {Object.entries(aggregation.values).map(([key, value]) => (
             <label key={key} className="text-sm text-slate-300">
               <span className="block text-xs uppercase tracking-wide text-slate-500">
-                {String(key).replaceAll("_", " ")}
+                {fieldTitles[key] ?? String(key).replaceAll("_", " ")}
               </span>
               <input
                 type="number"
@@ -381,9 +429,11 @@ export default function PoliciesSettingsPanel() {
       <section className="rounded-xl border border-slate-800/70 bg-slate-950/40 p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-slate-100">Calibration</h3>
+            <h3 className="text-sm font-semibold text-slate-100">
+              {sectionTitles.Calibration}
+            </h3>
             <p className="text-sm text-slate-400">
-              Tunes how we correct overconfidence vs results.
+              Настраивает коррекцию излишней уверенности по сравнению с результатами.
             </p>
           </div>
           <Button
@@ -393,14 +443,14 @@ export default function PoliciesSettingsPanel() {
             }
             disabled={savingCalibration || !isDirty(calibration)}
           >
-            {savingCalibration ? "Saving" : "Save"}
+            {savingCalibration ? "Сохранение..." : "Сохранить"}
           </Button>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {Object.entries(calibration.values).map(([key, value]) => (
             <label key={key} className="text-sm text-slate-300">
               <span className="block text-xs uppercase tracking-wide text-slate-500">
-                {String(key).replaceAll("_", " ")}
+                {fieldTitles[key] ?? String(key).replaceAll("_", " ")}
               </span>
               <input
                 type="number"
@@ -425,10 +475,10 @@ export default function PoliciesSettingsPanel() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="text-sm font-semibold text-slate-100">
-              Recommendation
+              {sectionTitles.Recommendation}
             </h3>
             <p className="text-sm text-slate-400">
-              Controls when and how many next actions we suggest.
+              Определяет, когда и сколько следующих действий мы предлагаем.
             </p>
           </div>
           <Button
@@ -443,14 +493,14 @@ export default function PoliciesSettingsPanel() {
             }
             disabled={savingRecommendation || !isDirty(recommendation)}
           >
-            {savingRecommendation ? "Saving" : "Save"}
+            {savingRecommendation ? "Сохранение..." : "Сохранить"}
           </Button>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {Object.entries(recommendation.values).map(([key, value]) => (
             <label key={key} className="text-sm text-slate-300">
               <span className="block text-xs uppercase tracking-wide text-slate-500">
-                {String(key).replaceAll("_", " ")}
+                {fieldTitles[key] ?? String(key).replaceAll("_", " ")}
               </span>
               <input
                 type="number"
@@ -474,9 +524,11 @@ export default function PoliciesSettingsPanel() {
       <section className="rounded-xl border border-slate-800/70 bg-slate-950/40 p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-slate-100">Risk</h3>
+            <h3 className="text-sm font-semibold text-slate-100">
+              {sectionTitles.Risk}
+            </h3>
             <p className="text-sm text-slate-400">
-              Controls when a block or task is considered at risk.
+              Определяет, когда ограниченный контекст или задача считаются рискованными.
             </p>
           </div>
           <Button
@@ -484,14 +536,14 @@ export default function PoliciesSettingsPanel() {
             onClick={() => handleSave("Risk", risk, setRisk, saveRisk)}
             disabled={savingRisk || !isDirty(risk)}
           >
-            {savingRisk ? "Saving" : "Save"}
+            {savingRisk ? "Сохранение..." : "Сохранить"}
           </Button>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {Object.entries(risk.values).map(([key, value]) => (
             <label key={key} className="text-sm text-slate-300">
               <span className="block text-xs uppercase tracking-wide text-slate-500">
-                {String(key).replaceAll("_", " ")}
+                {fieldTitles[key] ?? String(key).replaceAll("_", " ")}
               </span>
               <input
                 type="number"

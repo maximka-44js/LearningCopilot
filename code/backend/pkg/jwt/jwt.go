@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -40,6 +41,21 @@ type Manager struct {
 	issuer   string
 	secret   []byte
 	duration time.Duration
+}
+
+type UserClaims struct {
+	Subject           string
+	PreferredUsername string
+	GivenName         string
+	FamilyName        string
+}
+
+func (c UserClaims) DisplayName() string {
+	name := strings.TrimSpace(strings.Join([]string{c.GivenName, c.FamilyName}, " "))
+	if name != "" {
+		return name
+	}
+	return strings.TrimSpace(c.PreferredUsername)
 }
 
 // New creates a Keycloak-backed JWT manager using OIDC discovery.
@@ -94,8 +110,16 @@ func (m *Manager) GenerateToken(userID string) (string, error) {
 
 // ParseToken validates a JWT token and returns the user ID.
 func (m *Manager) ParseToken(tokenString string) (string, error) {
+	claims, err := m.ParseClaims(tokenString)
+	if err != nil {
+		return "", err
+	}
+	return claims.Subject, nil
+}
+
+func (m *Manager) ParseClaims(tokenString string) (UserClaims, error) {
 	if tokenString == "" {
-		return "", ErrEmptyToken
+		return UserClaims{}, ErrEmptyToken
 	}
 
 	if m.verifier != nil {
@@ -104,32 +128,40 @@ func (m *Manager) ParseToken(tokenString string) (string, error) {
 
 		idToken, err := m.verifier.Verify(ctx, tokenString)
 		if err != nil {
-			return "", fmt.Errorf("jwt - ParseToken - verifier.Verify: %w", err)
+			return UserClaims{}, fmt.Errorf("jwt - ParseToken - verifier.Verify: %w", err)
 		}
 
 		var claims struct {
-			Subject         string          `json:"sub"`
-			Audience        json.RawMessage `json:"aud"`
-			AuthorizedParty string          `json:"azp"`
+			Subject           string          `json:"sub"`
+			PreferredUsername string          `json:"preferred_username"`
+			GivenName         string          `json:"given_name"`
+			FamilyName        string          `json:"family_name"`
+			Audience          json.RawMessage `json:"aud"`
+			AuthorizedParty   string          `json:"azp"`
 		}
 		if err := idToken.Claims(&claims); err != nil {
-			return "", fmt.Errorf("jwt - ParseToken - Claims: %w", err)
+			return UserClaims{}, fmt.Errorf("jwt - ParseToken - Claims: %w", err)
 		}
 		if m.issuer != "" && idToken.Issuer != m.issuer {
-			return "", fmt.Errorf("%w: expected %q got %q", ErrInvalidIssuer, m.issuer, idToken.Issuer)
+			return UserClaims{}, fmt.Errorf("%w: expected %q got %q", ErrInvalidIssuer, m.issuer, idToken.Issuer)
 		}
 		if claims.Subject == "" {
-			return "", ErrEmptySubject
+			return UserClaims{}, ErrEmptySubject
 		}
 		if m.clientID != "" && !audienceMatches(claims.Audience, claims.AuthorizedParty, m.clientID) {
-			return "", ErrInvalidAudience
+			return UserClaims{}, ErrInvalidAudience
 		}
 
-		return claims.Subject, nil
+		return UserClaims{
+			Subject:           claims.Subject,
+			PreferredUsername: claims.PreferredUsername,
+			GivenName:         claims.GivenName,
+			FamilyName:        claims.FamilyName,
+		}, nil
 	}
 
 	if len(m.secret) == 0 {
-		return "", ErrTokenVerificationUnavailable
+		return UserClaims{}, ErrTokenVerificationUnavailable
 	}
 
 	parser := jwtlib.NewParser(jwtlib.WithValidMethods([]string{jwtlib.SigningMethodHS256.Alg()}))
@@ -142,21 +174,21 @@ func (m *Manager) ParseToken(tokenString string) (string, error) {
 		return m.secret, nil
 	})
 	if err != nil {
-		return "", fmt.Errorf("jwt - ParseToken - jwtlib.ParseWithClaims: %w", err)
+		return UserClaims{}, fmt.Errorf("jwt - ParseToken - jwtlib.ParseWithClaims: %w", err)
 	}
 	if !token.Valid {
-		return "", errors.New("jwt - ParseToken - invalid token")
+		return UserClaims{}, errors.New("jwt - ParseToken - invalid token")
 	}
 
 	sub, err := claims.GetSubject()
 	if err != nil {
-		return "", fmt.Errorf("jwt - ParseToken - GetSubject: %w", err)
+		return UserClaims{}, fmt.Errorf("jwt - ParseToken - GetSubject: %w", err)
 	}
 	if sub == "" {
-		return "", ErrEmptySubject
+		return UserClaims{}, ErrEmptySubject
 	}
 
-	return sub, nil
+	return UserClaims{Subject: sub}, nil
 }
 
 func audienceMatches(aud json.RawMessage, azp string, clientID string) bool {

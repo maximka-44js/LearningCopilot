@@ -243,6 +243,29 @@ func (r *APIKeyRepo) Update(ctx context.Context, key *entity.APIKey) error {
 	return nil
 }
 
+func (r *APIKeyRepo) Delete(ctx context.Context, userID, apiKeyID string) error {
+	exec := postgres.ExecutorFromContext(ctx, r.Pool)
+	sql, args, err := r.Builder.
+		Delete("api_keys").
+		Where(sq.Eq{"id": apiKeyID}).
+		Where(sq.Eq{"user_id": userID}).
+		Where(sq.NotEq{"revoked_at": nil}).
+		ToSql()
+	if err != nil {
+		return d.NewAppError(entity.CodeUndefined, "Internal error", d.KindInternal, nil)
+	}
+
+	res, err := exec.Exec(ctx, sql, args...)
+	if err != nil {
+		return handleRepoErr(err)
+	}
+	if res.RowsAffected() == 0 {
+		return d.NewNotFound(entity.CodeAPIKeyNotFound, "API key not found")
+	}
+
+	return nil
+}
+
 func (r *APIKeyRepo) TouchLastUsed(ctx context.Context, apiKeyID string, usedAt time.Time) error {
 	exec := postgres.ExecutorFromContext(ctx, r.Pool)
 	sql, args, err := r.Builder.

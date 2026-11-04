@@ -22,9 +22,9 @@ export default function UploadProgressBanner({
     <div className="mb-4 rounded-lg border border-slate-800/80 bg-slate-900/45 px-3 py-3">
       <div className="flex flex-wrap items-center gap-3">
         {uploadProgress.status === "uploading" ? (
-          <Image src="/icons/file-uploading-svgrepo-com.svg" alt="Uploading" width={18} height={18} />
+          <Image src="/icons/file-uploading-svgrepo-com.svg" alt="Загрузка" width={18} height={18} />
         ) : uploadProgress.status === "error" ? (
-          <Image src="/icons/fail-svgrepo-com.svg" alt="Upload failed" width={18} height={18} />
+          <Image src="/icons/fail-svgrepo-com.svg" alt="Ошибка загрузки" width={18} height={18} />
         ) : null}
         <div className="h-2 min-w-48 flex-1 overflow-hidden rounded-full bg-slate-800/80">
           <div
@@ -34,17 +34,17 @@ export default function UploadProgressBanner({
         </div>
         {uploadProgress.canCancel ? (
           <Button type="button" size="sm" variant="outline" onClick={onCancelUpload}>
-            Cancel upload
+            Отменить загрузку
           </Button>
         ) : null}
         {uploadProgress.status !== "uploading" ? (
           <Button type="button" size="sm" variant="outline" onClick={onClose}>
-            Close
+            Закрыть
           </Button>
         ) : null}
       </div>
       <p className="mt-2 text-xs text-slate-400">
-        {uploadProgress.progressLabel || "Preparing upload..."}
+        {uploadProgress.progressLabel || "Подготовка загрузки..."}
         {typeof uploadProgress.progressPct === "number" ? ` ${uploadProgress.progressPct}%` : ""}
         {uploadProgress.fileName ? ` - ${uploadProgress.fileName}` : ""}
       </p>

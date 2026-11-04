@@ -44,11 +44,16 @@ x-backend-app-environment: &x-backend-app-environment
   JWT_ISSUER: "${JWT_ISSUER:-http://keycloak:8080/realms/lc}"
   JWT_DISCOVERY_ISSUER: "${JWT_DISCOVERY_ISSUER:-http://keycloak:8080/realms/lc}"
   JWT_CLIENT_ID: "${JWT_CLIENT_ID:-lc-frontend}"
+  # API keys
+  API_KEYS_ENABLED: "${API_KEYS_ENABLED:-true}"
+  API_KEYS_HASH_PEPPER: "${API_KEYS_HASH_PEPPER:-local-development-api-key-pepper}"
+  API_KEYS_MAX_PER_USER: "${API_KEYS_MAX_PER_USER:-20}"
+  API_KEYS_ROTATE_GRACE_WINDOW: "${API_KEYS_ROTATE_GRACE_WINDOW:-24h}"
 
 services:
   db:
     container_name: db
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     environment:
       <<: *x-db-environment
     volumes:
@@ -72,7 +77,7 @@ services:
       KC_DB_USERNAME: "${KEYCLOAK_DB_USER:-keycloak}"
       KC_DB_PASSWORD: "${KEYCLOAK_DB_PASSWORD:-keycloak}"
     volumes:
-      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+      - ./keycloak/realm-export.dev.json:/opt/keycloak/data/import/realm-export.json:ro
       - ./keycloak/themes.jar:/opt/keycloak/providers/keycloak-theme-for-kc-22-to-25.jar:ro
     ports:
       - "${DEV_KEYCLOAK_HOST_PORT:-8082}:8080"
@@ -104,6 +109,8 @@ services:
     platform: linux/amd64
     pid: "host"
     restart: on-failure:5
+    extra_hosts:
+      - "s3.ru-7.storage.selcloud.ru:87.249.33.16"
     build:
       context: .
     environment:
@@ -111,8 +118,12 @@ services:
     ports:
       - "${DEV_APP_HTTP_HOST_PORT:-8080}:8080"
     depends_on:
-      - db
-      - keycloak
+      db:
+        condition: service_started
+      keycloak:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
     deploy:
       resources:
         limits:
@@ -125,6 +136,24 @@ services:
       app_network:
         aliases:
           - app.lvh.me
+
+  migrate:
+    container_name: migrate
+    platform: linux/amd64
+    restart: "no"
+    build:
+      context: .
+    command: ["/migrate"]
+    environment:
+      <<: *x-backend-app-environment
+      MIGRATIONS_PATH: "file:///migrations"
+    depends_on:
+      db:
+        condition: service_started
+    networks:
+      app_network:
+        aliases:
+          - migrate.lvh.me
 
   frontend-next:
     container_name: frontend-next
@@ -152,6 +181,12 @@ services:
     depends_on:
       - app
       - keycloak
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
     expose:
       - "3000"
     networks:
@@ -185,9 +220,12 @@ services:
     ports:
       - "${DEV_NGINX_HOST_PORT:-80}:80"
     depends_on:
-      - app
-      - frontend-next
-      - frontend-docs
+      app:
+        condition: service_started
+      frontend-next:
+        condition: service_healthy
+      frontend-docs:
+        condition: service_started
     networks:
       app_network:
         aliases:

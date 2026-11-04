@@ -42,7 +42,7 @@ export default function ProjectDashboardContainer({
   if (isLoading) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading project dashboard...
+        Загрузка панели проекта...
       </div>
     );
   }
@@ -68,10 +68,10 @@ export default function ProjectDashboardContainer({
   if (isError || !dashboard) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-        Unable to load the project dashboard right now.
+        Не удалось загрузить панель проекта. Попробуйте ещё раз позже.
         {wrapped && wrapped.status !== 200 ? (
           <span className="mt-2 block text-xs text-slate-400">
-            API returned status {wrapped.status}.
+            API вернул статус {wrapped.status}.
           </span>
         ) : null}
       </div>
@@ -94,11 +94,11 @@ export default function ProjectDashboardContainer({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-              Project
+              Проект
             </p>
             <h1 className="text-3xl font-semibold">
               <span className="inline-flex flex-wrap items-center gap-3">
-                {project?.name || "Project dashboard"}
+                {project?.name || "Панель проекта"}
                 {typeof track === "string" && track.trim() ? (
                   <span className="rounded-full border border-slate-800/70 bg-slate-900/60 px-2 py-0.5 text-[0.7rem] uppercase tracking-[0.2em] text-slate-300">
                     {track}
@@ -108,7 +108,7 @@ export default function ProjectDashboardContainer({
             </h1>
             <p className="max-w-2xl text-sm text-slate-400">
               {project?.description?.trim() ||
-                "Readiness, coverage, and critical items before the deadline."}
+                "Готовность, охват и критичные элементы до дедлайна."}
             </p>
           </div>
 
@@ -117,31 +117,31 @@ export default function ProjectDashboardContainer({
               href={`/projects/${projectId}/settings`}
               className="rounded-md border border-slate-800 bg-slate-950/40 px-3 py-2 text-slate-200 transition hover:border-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
             >
-              Project settings
+              Настройки
             </Link>
           </nav>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
-            label="Coverage"
+            label="Охват"
             value={formatPercent(dashboard.coverage)}
             tone={metricTone(dashboard.coverage)}
             progress={dashboard.coverage}
           />
           <Metric
-            label="Readiness now"
+            label="Текущая готовность"
             value={formatPercent(dashboard.readinessNow)}
             tone={metricTone(dashboard.readinessNow)}
             progress={dashboard.readinessNow}
           />
           <Metric
-            label="Project risk"
+            label="Риск проекта"
             value={formatLabel(project?.risk)}
             tone={riskTone(project?.risk)}
           />
           <Metric
-            label="Deadline"
+            label="Дедлайн"
             value={formatDate(project?.deadline_at)}
             tone="slate"
           />
@@ -151,41 +151,41 @@ export default function ProjectDashboardContainer({
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="lg:flex lg:h-[42rem] lg:flex-col">
           <CardHeader className="space-y-2">
-            <CardTitle>Project details</CardTitle>
+            <CardTitle>Данные проекта</CardTitle>
             <CardDescription>
-              Core fields returned by the dashboard read-model.
+              Основные данные проекта.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 lg:lc-scrollbar lg:flex-1 lg:overflow-auto">
             <dl className="space-y-3">
-              <ValueRow label="Status" value={formatLabel(project?.status)} />
+              <ValueRow label="Статус" value={formatLabel(project?.status)} />
               <ValueRow
-                label="Priority"
+                label="Приоритет"
                 value={formatLabel(project?.priority)}
               />
               <ValueRow
-                label="Track"
-                value={typeof track === "string" && track.trim() ? track : "N/A"}
+                label="Направление"
+                value={typeof track === "string" && track.trim() ? track : "Нет данных"}
               />
               <ValueRow
-                label="Readiness"
+                label="Готовность"
                 value={formatPercent(project?.readiness)}
               />
               <ValueRow
-                label="Coverage"
+                label="Охват"
                 value={formatPercent(project?.coverage)}
               />
-              <ValueRow label="Risk" value={formatLabel(project?.risk)} />
+              <ValueRow label="Риск" value={formatLabel(project?.risk)} />
               <ValueRow
-                label="Created"
+                label="Создан"
                 value={formatDate(project?.created_at)}
               />
               <ValueRow
-                label="Updated"
+                label="Изменён"
                 value={formatDate(project?.updated_at)}
               />
               <ValueRow
-                label="Archived"
+                label="Архивирован"
                 value={formatDate(project?.archived_at)}
               />
             </dl>
@@ -204,10 +204,10 @@ export default function ProjectDashboardContainer({
                       statusDotClass(project.status)
                     )}
                   />
-                  Status: {formatLabel(project.status)}
+                  Статус: {formatLabel(project.status)}
                 </span>
                 <span className="rounded-md border border-slate-800/70 bg-slate-900/60 px-2 py-1 text-slate-200">
-                  Priority: {formatLabel(project.priority)}
+                  Приоритет: {formatLabel(project.priority)}
                 </span>
               </div>
             ) : null}
@@ -218,9 +218,9 @@ export default function ProjectDashboardContainer({
 
       <Card>
         <CardHeader className="space-y-2">
-          <CardTitle>Critical to deadline</CardTitle>
+          <CardTitle>Критично для дедлайна</CardTitle>
           <CardDescription>
-            Items that could block hitting the project deadline.
+            Элементы, которые могут помешать уложиться в дедлайн проекта.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">

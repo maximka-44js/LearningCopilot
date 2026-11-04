@@ -30,16 +30,21 @@ export default function StageCard({ href, stage, className }: StageCardProps) {
       >
         <CardHeader className="space-y-3">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-2">
+            <div className="min-w-0 flex-1 space-y-2">
               <p className="text-sm uppercase tracking-[0.3em] text-slate-500">
-                Stage
+                Этап
                 {typeof stage.order === "number" ? ` · ${stage.order}` : ""}
               </p>
-              <CardTitle className="flex flex-wrap items-center gap-2 text-[1.3rem]">
-                {stage.name || "Untitled stage"}
+              <CardTitle className="min-w-0 text-[1.3rem]">
+                <span
+                  className="block truncate"
+                  title={stage.name || "Этап без названия"}
+                >
+                  {stage.name || "Этап без названия"}
+                </span>
               </CardTitle>
               <CardDescription className="max-w-2xl text-base leading-relaxed">
-                {goal || "No goal defined"}
+                {goal || "Цель не указана"}
               </CardDescription>
             </div>
             <div className="flex flex-col items-start gap-2 text-[0.95rem]">
@@ -52,7 +57,7 @@ export default function StageCard({ href, stage, className }: StageCardProps) {
                 <span
                   className={cn("h-2 w-2 rounded-full", statusDotClass(stage.status))}
                 />
-                Status: {formatLabel(stage.status)}
+                Статус: {formatLabel(stage.status)}
               </span>
               <span
                 className={cn(
@@ -60,7 +65,7 @@ export default function StageCard({ href, stage, className }: StageCardProps) {
                   badgeTone(stage.risk)
                 )}
               >
-                Risk: {formatLabel(stage.risk)}
+                Риск: {formatLabel(stage.risk)}
               </span>
             </div>
           </div>
@@ -68,27 +73,27 @@ export default function StageCard({ href, stage, className }: StageCardProps) {
         <CardContent className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Metric
-              label="Readiness"
+              label="Готовность"
               value={formatPercent(stage.readiness)}
               tone={metricTone(stage.readiness)}
               progress={stage.readiness}
             />
             <Metric
-              label="Coverage"
+              label="Охват"
               value={formatPercent(stage.coverage)}
               tone={metricTone(stage.coverage)}
               progress={stage.coverage}
             />
             <Metric
-              label="Deadline"
+              label="Дедлайн"
               value={formatDate(stage.deadline_at)}
               tone="slate"
             />
           </div>
           <div className="flex flex-wrap gap-6 text-[0.95rem] text-slate-400">
-            <span>Created: {formatDate(stage.created_at)}</span>
-            <span>Updated: {formatDate(stage.updated_at)}</span>
-            <span>Archived: {formatDate(stage.archived_at)}</span>
+            <span>Создан: {formatDate(stage.created_at)}</span>
+            <span>Изменён: {formatDate(stage.updated_at)}</span>
+            <span>Архивирован: {formatDate(stage.archived_at)}</span>
           </div>
         </CardContent>
       </Link>

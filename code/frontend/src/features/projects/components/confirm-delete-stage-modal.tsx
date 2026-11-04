@@ -44,27 +44,27 @@ export default function ConfirmDeleteStageModal({
     <div className="fixed inset-0 z-[9999] grid place-items-center bg-slate-950/70 p-4 backdrop-blur-sm">
       <Card className="w-full max-w-lg">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-[1.2rem]">Delete stage</CardTitle>
+          <CardTitle className="text-[1.2rem]">Удалить этап</CardTitle>
           <CardDescription className="text-sm text-slate-400">
-            This action cannot be undone. Type the stage name to confirm.
+            Это действие нельзя отменить. Введите название этапа для подтверждения.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-100">
-            This will permanently delete the stage and its tasks.
+            Этап и его задачи будут удалены навсегда.
           </div>
           <div className="grid gap-2">
-            <label className="text-sm text-slate-300">Stage name</label>
+            <label className="text-sm text-slate-300">Название этапа</label>
             <input
               value={value}
               onChange={(event) => setValue(event.target.value)}
               className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
-              placeholder={normalizedName || "Stage name"}
+              placeholder={normalizedName || "Название этапа"}
             />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3">
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              Отмена
             </Button>
             <Button
               type="button"
@@ -72,7 +72,7 @@ export default function ConfirmDeleteStageModal({
               disabled={!canDelete || isPending}
               className="bg-rose-500 text-white hover:bg-rose-400"
             >
-              {isPending ? "Deleting..." : "Delete stage"}
+              {isPending ? "Удаление..." : "Удалить этап"}
             </Button>
           </div>
         </CardContent>

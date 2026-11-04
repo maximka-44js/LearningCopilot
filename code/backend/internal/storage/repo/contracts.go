@@ -15,7 +15,13 @@ type (
 		GetByID(ctx context.Context, userID, libID string) (entity.Library, error)
 		Update(ctx context.Context, library *entity.Library) error
 		Delete(ctx context.Context, userID, libID string) (int64, error)
+		RemoveUserAccess(ctx context.Context, userID, libID string) error
 		List(ctx context.Context, userID string) ([]entity.Library, error)
+		ListPublic(ctx context.Context, userID, search, sort string, limit, offset int) (entity.PublicLibrariesPage, error)
+		StarPublic(ctx context.Context, userID, libID string) error
+		UnstarPublic(ctx context.Context, userID, libID string) error
+		AddPublicSubscription(ctx context.Context, userID, libID string) error
+		RemovePublicSubscription(ctx context.Context, userID, libID string) error
 	}
 	FolderRepo interface {
 		Store(ctx context.Context, folder *entity.Folder) error

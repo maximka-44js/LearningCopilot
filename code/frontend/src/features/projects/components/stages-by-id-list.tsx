@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import Link from "next/link";
+import { useMemo } from "react";
 
 import StageCard from "@/features/projects/components/stage-card";
 import { useListStagesByProject } from "@/generated/api/stages/stages";
@@ -71,37 +71,37 @@ export default function StagesByIdList({
           className="w-fit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
         >
           <h2 className="inline-flex items-center gap-2 text-xl font-semibold text-slate-100 underline-offset-4 transition hover:underline">
-            Stages
+            Этапы
             <img
               src="/icons/external-link.svg"
               alt=""
               aria-hidden="true"
               className="h-4 w-4 opacity-60 brightness-0 invert"
             />
-            <span className="sr-only">(opens stages)</span>
+            <span className="sr-only">(открывает этапы)</span>
           </h2>
         </Link>
         <p className="text-sm text-slate-400">
-          Stage status, goal, readiness, coverage, and risk.
+          Статус, цель, готовность, охват и риски по этапам.
         </p>
       </div>
 
-      <div className="lc-scrollbar grid gap-6 lg:flex-1 lg:overflow-auto lg:pr-2">
+      <div className="lc-scrollbar grid gap-6 lg:min-h-0 lg:flex-1 lg:auto-rows-max lg:overflow-y-auto lg:pr-2">
         {uniqueStageIds.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-6 py-10 text-center text-sm text-slate-400">
-            No stages returned yet.
+            Этапы пока не найдены.
           </div>
         ) : isLoading ? (
           <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-            Loading stages...
+            Загрузка этапов...
           </div>
         ) : isError || !stages ? (
           <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-            Unable to load stages right now.
+            Не удалось загрузить этапы.
           </div>
         ) : visibleStages.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-6 py-10 text-center text-sm text-slate-400">
-            No matching stages found.
+            Подходящие этапы не найдены.
           </div>
         ) : (
           visibleStages.map((stage, index) => (

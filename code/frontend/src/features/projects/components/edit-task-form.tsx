@@ -13,6 +13,7 @@ import {
 } from "@/generated/api/projects-read-model/projects-read-model";
 import { getGetTaskByIdQueryKey, useUpdateTask } from "@/generated/api/tasks/tasks";
 import type { GithubComMaximka44jsLcInternalProjectsEntityTask as Task } from "@/generated/model/githubComMaximka44jsLcInternalProjectsEntityTask";
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
 
 const defaultForm = {
   outcome: "",
@@ -37,19 +38,23 @@ type EditTaskFormProps = {
 };
 
 const editTaskSchema = z.object({
-  outcome: z.string().trim().min(1, "Outcome is required.").max(2000),
+  outcome: z
+    .string()
+    .trim()
+    .min(1, "Введите результат задачи.")
+    .max(ENTITY_TITLE_MAX_LENGTH, `Название не должно превышать ${ENTITY_TITLE_MAX_LENGTH} символов.`),
   difficulty: z
     .string()
     .trim()
-    .refine((value) => Number.isFinite(Number(value)), "Difficulty is required.")
+    .refine((value) => Number.isFinite(Number(value)), "Введите сложность.")
     .transform((value) => Number(value))
-    .refine((value) => Number.isInteger(value) && value >= 1 && value <= 10, "Difficulty must be 1-10."),
+    .refine((value) => Number.isInteger(value) && value >= 1 && value <= 10, "Сложность должна быть от 1 до 10."),
   deadline: z
     .string()
     .optional()
     .refine(
       (value) => !value || !Number.isNaN(Date.parse(value)),
-      "Deadline must be a valid date."
+      "Введите корректную дату дедлайна."
     )
     .or(z.literal("")),
   priority: z.enum(["low", "normal", "high"]),
@@ -129,10 +134,10 @@ export default function EditTaskForm({
     const parsed = editTaskSchema.safeParse(form);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      const message = firstIssue?.message ?? "Invalid form values.";
+      const message = firstIssue?.message ?? "Проверьте введённые данные.";
       setErrors({ message });
       toast({
-        title: "Check the form",
+        title: "Проверьте форму",
         description: message,
         variant: "error",
       });
@@ -158,10 +163,10 @@ export default function EditTaskForm({
 
       if (typeof (response as { status?: unknown }).status === "number") {
         if ((response as { status: number }).status !== 200) {
-          setErrors({ message: "Task could not be updated." });
+          setErrors({ message: "Не удалось обновить задачу." });
           toast({
-            title: "Task not updated",
-            description: "Server rejected the request.",
+            title: "Задача не обновлена",
+            description: "Сервер отклонил запрос.",
             variant: "error",
           });
           return;
@@ -169,15 +174,15 @@ export default function EditTaskForm({
       }
 
       toast({
-        title: "Task updated",
-        description: "The task details were saved.",
+        title: "Задача обновлена",
+        description: "Изменения задачи сохранены.",
       });
       onClose();
     } catch {
-      setErrors({ message: "Task could not be updated." });
+      setErrors({ message: "Не удалось обновить задачу." });
       toast({
-        title: "Task not updated",
-        description: "Something went wrong while saving the task.",
+        title: "Задача не обновлена",
+        description: "Не удалось сохранить изменения задачи.",
         variant: "error",
       });
     }
@@ -193,9 +198,9 @@ export default function EditTaskForm({
         <CardHeader className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-[1.2rem]">Edit task</CardTitle>
+              <CardTitle className="text-[1.2rem]">Изменить задачу</CardTitle>
               <CardDescription className="text-sm text-slate-400">
-                Update the outcome, priority, difficulty, or deadline.
+                Измените результат, приоритет, сложность или дедлайн.
               </CardDescription>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
@@ -206,12 +211,13 @@ export default function EditTaskForm({
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Outcome</label>
+              <label className="text-sm text-slate-300">Результат</label>
               <textarea
                 value={form.outcome}
                 onChange={(event) => handleChange("outcome", event.target.value)}
+                maxLength={ENTITY_TITLE_MAX_LENGTH}
                 className="min-h-[96px] rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-100"
-                placeholder="Explain cell membrane transport principles"
+                placeholder="Объяснить принципы транспорта через мембрану клетки"
                 required
               />
             </div>
@@ -229,21 +235,21 @@ export default function EditTaskForm({
                 />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Priority</label>
+                <label className="text-sm text-slate-300">Приоритет</label>
                 <select
                   value={form.priority}
                   onChange={(event) => handleChange("priority", event.target.value)}
                   className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
                 >
-                  <option value="high">High</option>
-                  <option value="normal">Normal</option>
-                  <option value="low">Low</option>
+                  <option value="high">Высокий</option>
+                  <option value="normal">Обычный</option>
+                  <option value="low">Низкий</option>
                 </select>
               </div>
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Deadline</label>
+              <label className="text-sm text-slate-300">Дедлайн</label>
               <input
                 type="datetime-local"
                 value={form.deadline}
@@ -260,10 +266,10 @@ export default function EditTaskForm({
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isPending || !isDirty}>
-                {isPending ? "Saving..." : "Save changes"}
+                {isPending ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </div>
           </form>

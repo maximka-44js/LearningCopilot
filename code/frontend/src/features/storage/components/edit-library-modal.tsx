@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { useToast } from "@/components/providers/toast-provider";
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -46,40 +47,25 @@ const createAccessRow = (userID = "", role: "reader" | "writer" = "reader"): Acc
   userID,
 });
 
-const formSchema = z
-  .object({
-    title: z
-      .string()
-      .trim()
-      .min(1, "Title is required.")
-      .max(100, "Title must be at most 100 characters.")
-      .refine(isValidStorageName, {
-        message:
-          "Title may contain letters, numbers, spaces, '-' and '_' only. '.' and '..' are not allowed.",
-      }),
-    description: z.string().trim().max(1000).optional().or(z.literal("")),
-    isPublic: z.boolean(),
-    accesses: z.array(
-      z.object({
-        role: z.enum(["reader", "writer"]),
-        userID: z.string().trim(),
-      })
-    ),
-  })
-  .superRefine((value, ctx) => {
-    if (value.isPublic) {
-      return;
-    }
-
-    const hasAnyAccessUser = value.accesses.some((access) => access.userID.length > 0);
-    if (!hasAnyAccessUser) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["accesses"],
-        message: "Private library requires at least one access user ID.",
-      });
-    }
-  });
+const formSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Введите название.")
+    .max(ENTITY_TITLE_MAX_LENGTH, `Название должно содержать не более ${ENTITY_TITLE_MAX_LENGTH} символов.`)
+    .refine(isValidStorageName, {
+      message:
+        "Название может содержать только буквы, цифры, пробелы, «-» и «_». «.» и «..» недопустимы.",
+    }),
+  description: z.string().trim().max(1000).optional().or(z.literal("")),
+  isPublic: z.boolean(),
+  accesses: z.array(
+    z.object({
+      role: z.enum(["reader", "writer"]),
+      userID: z.string().trim(),
+    })
+  ),
+});
 
 const defaultFormState: FormState = {
   title: "",
@@ -143,7 +129,7 @@ export default function EditLibraryModal({
 
     setForm({
       title: library.title,
-      description: library.description === "No description" ? "" : library.description,
+      description: library.description === "Нет описания" ? "" : library.description,
       isPublic: library.isPublic,
       accesses: mappedAccesses,
     });
@@ -189,7 +175,7 @@ export default function EditLibraryModal({
       const message = "Library ID is empty. Reload and try again.";
       setErrorMessage(message);
       toast({
-        title: "Library not updated",
+        title: "Библиотека не обновлена",
         description: message,
         variant: "error",
       });
@@ -207,10 +193,10 @@ export default function EditLibraryModal({
     });
 
     if (!parsed.success) {
-      const message = parsed.error.issues[0]?.message ?? "Invalid form values.";
+      const message = parsed.error.issues[0]?.message ?? "Проверьте значения в форме.";
       setErrorMessage(message);
       toast({
-        title: "Check form values",
+        title: "Проверьте значения",
         description: message,
         variant: "error",
       });
@@ -224,9 +210,12 @@ export default function EditLibraryModal({
           title: parsed.data.title.trim(),
           description: parsed.data.description?.trim() || undefined,
           public: parsed.data.isPublic,
-          accesses: parsed.data.isPublic
-            ? undefined
-            : parsed.data.accesses.filter((access) => access.userID.trim().length > 0),
+          accesses: parsed.data.accesses
+            .filter((access) => access.userID.trim().length > 0)
+            .map((access) => ({
+              ...access,
+              role: parsed.data.isPublic ? "writer" as const : access.role,
+            })),
         },
       });
 
@@ -236,10 +225,10 @@ export default function EditLibraryModal({
           : undefined;
 
       if (typeof status === "number" && status >= 400) {
-        const message = "Server rejected the library update.";
+        const message = "Сервер отклонил обновление библиотеки.";
         setErrorMessage(message);
         toast({
-          title: "Library not updated",
+          title: "Библиотека не обновлена",
           description: message,
           variant: "error",
         });
@@ -247,15 +236,15 @@ export default function EditLibraryModal({
       }
 
       toast({
-        title: "Library updated",
-        description: "Library info has been saved.",
+        title: "Библиотека обновлена",
+        description: "Данные библиотеки сохранены.",
       });
       onClose();
     } catch {
-      const message = "Something went wrong while updating library.";
+      const message = "При обновлении библиотеки произошла ошибка.";
       setErrorMessage(message);
       toast({
-        title: "Library not updated",
+        title: "Библиотека не обновлена",
         description: message,
         variant: "error",
       });
@@ -272,39 +261,39 @@ export default function EditLibraryModal({
         <CardHeader className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-[1.2rem]">Edit library</CardTitle>
+              <CardTitle className="text-[1.2rem]">Изменить библиотеку</CardTitle>
               <CardDescription className="text-sm text-slate-400">
-                Update title, visibility and accesses.
+                Измените название, видимость и доступ.
               </CardDescription>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
-              Close
+              Закрыть
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Title</label>
+              <label className="text-sm text-slate-300">Название</label>
               <input
                 value={form.title}
                 onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
                 className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
-                placeholder="My library"
-                maxLength={100}
+                placeholder="Моя библиотека"
+                maxLength={ENTITY_TITLE_MAX_LENGTH}
                 required
               />
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Description</label>
+              <label className="text-sm text-slate-300">Описание</label>
               <textarea
                 value={form.description}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, description: event.target.value }))
                 }
                 className="min-h-24 rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-100"
-                placeholder="Library description"
+                placeholder="Описание библиотеки"
                 maxLength={1000}
               />
             </div>
@@ -318,61 +307,64 @@ export default function EditLibraryModal({
                 }
                 className="h-4 w-4 rounded border-slate-700 bg-slate-900"
               />
-              Public library
+              Публичная библиотека
             </label>
 
-            {!form.isPublic ? (
-              <div className="space-y-3 rounded-lg border border-slate-800/80 bg-slate-900/30 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-slate-200">Accesses</p>
-                  <Button type="button" variant="outline" size="sm" onClick={addAccess}>
-                    Add access
-                  </Button>
-                </div>
+            {form.isPublic ? (
+              <p className="text-sm text-slate-400">
+                Читать публичную библиотеку могут все пользователи. Добавляйте
+                сюда только пользователей с правом редактирования.
+              </p>
+            ) : null}
 
-                <div className="grid gap-3">
-                  {form.accesses.map((access) => (
-                    <div key={access.id} className="grid gap-2 rounded-md border border-slate-800/80 p-3 md:grid-cols-[1fr_10rem_auto]">
-                      <input
-                        value={access.userID}
-                        onChange={(event) =>
-                          updateAccess(access.id, "userID", event.target.value)
-                        }
-                        className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
-                        placeholder="User ID"
-                      />
-
+            <div className="space-y-3 rounded-lg border border-slate-800/80 bg-slate-900/30 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-medium text-slate-200">
+                  {form.isPublic ? "Доступ на редактирование" : "Доступ"}
+                </p>
+                <Button type="button" variant="outline" size="sm" onClick={addAccess}>
+                  Добавить доступ
+                </Button>
+              </div>
+              <div className="grid gap-3">
+                {form.accesses.map((access) => (
+                  <div key={access.id} className="grid gap-2 rounded-md border border-slate-800/80 p-3 md:grid-cols-[1fr_10rem_auto]">
+                    <input
+                      value={access.userID}
+                      onChange={(event) => updateAccess(access.id, "userID", event.target.value)}
+                      className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
+                      placeholder="Идентификатор пользователя"
+                    />
+                    {form.isPublic ? (
+                      <div className="flex h-10 items-center px-2 text-sm text-slate-400">
+                        Редактирование
+                      </div>
+                    ) : (
                       <select
                         value={access.role}
                         onChange={(event) => updateAccess(access.id, "role", event.target.value)}
                         className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
                       >
-                        <option value="reader">Reader</option>
-                        <option value="writer">Writer</option>
+                        <option value="reader">Чтение</option>
+                        <option value="writer">Запись</option>
                       </select>
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="border-rose-400/40 text-rose-200 hover:bg-rose-500/20"
-                        onClick={() => removeAccess(access.id)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                    <Button type="button" variant="outline" className="border-rose-400/40 text-rose-200 hover:bg-rose-500/20" onClick={() => removeAccess(access.id)}>
+                      Удалить
+                    </Button>
+                  </div>
+                ))}
               </div>
-            ) : null}
+            </div>
 
             {errorMessage ? <p className="text-sm text-rose-200">{errorMessage}</p> : null}
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : "Save changes"}
+                {isPending ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </div>
           </form>

@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import type { GithubComMaximka44jsLcInternalStorageEntityLibraryAccess as LibraryAccess } from "@/generated/model/githubComMaximka44jsLcInternalStorageEntityLibraryAccess";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { GithubComMaximka44jsLcInternalStorageEntityLibraryAccess as LibraryAccess } from "@/generated/model/githubComMaximka44jsLcInternalStorageEntityLibraryAccess";
 import { cn } from "@/lib/utils";
 
 export type LibrariesListItem = {
@@ -24,6 +24,8 @@ type LibrariesListProps = {
 };
 
 type VisibilityFilter = "all" | "public" | "private";
+type ModifiedFilter = "all" | "7" | "30" | "90";
+type SortOrder = "updated" | "created";
 
 function ellipsis(value: string, maxLength: number) {
   const normalized = value.trim();
@@ -35,15 +37,15 @@ function ellipsis(value: string, maxLength: number) {
 
 function formatDate(value: string | null) {
   if (!value) {
-    return "Unknown";
+    return "Неизвестно";
   }
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return "Неизвестно";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("ru-RU", {
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -52,21 +54,28 @@ function formatDate(value: string | null) {
 
 function formatAccesses(accesses: LibraryAccess[]) {
   if (accesses.length === 0) {
-    return "No collaborators";
+    return "Нет участников";
   }
 
   const readers = accesses.filter((access) => access.role === "reader").length;
   const writers = accesses.filter((access) => access.role === "writer").length;
 
-  return `${writers} writer${writers === 1 ? "" : "s"}, ${readers} reader${readers === 1 ? "" : "s"}`;
+  return `Запись: ${writers}, чтение: ${readers}`;
 }
 
 export default function LibrariesList({ items, className }: LibrariesListProps) {
   const [query, setQuery] = useState("");
   const [visibility, setVisibility] = useState<VisibilityFilter>("all");
+  const [modified, setModified] = useState<ModifiedFilter>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("updated");
+  const [now] = useState(() => Date.now());
 
   const visibleItems = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    const modifiedSince =
+      modified === "all"
+        ? null
+        : now - Number(modified) * 24 * 60 * 60 * 1000;
 
     return items
       .filter((item) => {
@@ -79,39 +88,72 @@ export default function LibrariesList({ items, className }: LibrariesListProps) 
           item.title.toLowerCase().includes(normalizedQuery) ||
           item.description.toLowerCase().includes(normalizedQuery);
 
-        return visibilityOk && queryOk;
+        const updatedAt = item.updatedAt ? Date.parse(item.updatedAt) : 0;
+        const modifiedOk = modifiedSince === null || updatedAt >= modifiedSince;
+
+        return visibilityOk && queryOk && modifiedOk;
       })
       .sort((left, right) => {
-        const leftTime = left.updatedAt ? Date.parse(left.updatedAt) : 0;
-        const rightTime = right.updatedAt ? Date.parse(right.updatedAt) : 0;
+        const leftValue =
+          sortOrder === "updated" ? left.updatedAt : left.createdAt;
+        const rightValue =
+          sortOrder === "updated" ? right.updatedAt : right.createdAt;
+        const leftTime = leftValue ? Date.parse(leftValue) : 0;
+        const rightTime = rightValue ? Date.parse(rightValue) : 0;
 
         return rightTime - leftTime;
       });
-  }, [items, query, visibility]);
+  }, [items, modified, now, query, sortOrder, visibility]);
 
   return (
     <section className={cn("space-y-6", className)}>
       <div className="flex flex-wrap items-center gap-4">
         <label className="flex min-w-[16rem] flex-1 flex-col gap-2 text-[0.8rem] uppercase tracking-[0.2em] text-slate-400">
-          Search
+          Поиск
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Find library by title or description"
+            placeholder="Поиск библиотеки по названию или описанию"
             className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-[0.95rem] normal-case tracking-normal text-slate-100 placeholder:text-slate-500"
           />
         </label>
 
         <label className="flex flex-col gap-2 text-[0.8rem] uppercase tracking-[0.2em] text-slate-400">
-          Visibility
+          Видимость
           <select
             value={visibility}
             onChange={(event) => setVisibility(event.target.value as VisibilityFilter)}
             className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-[0.95rem] normal-case tracking-normal text-slate-100"
           >
-            <option value="all">All</option>
-            <option value="public">Public</option>
-            <option value="private">Private</option>
+            <option value="all">Все</option>
+            <option value="public">Публичные</option>
+            <option value="private">Приватные</option>
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-2 text-[0.8rem] uppercase tracking-[0.2em] text-slate-400">
+          Изменение
+          <select
+            value={modified}
+            onChange={(event) => setModified(event.target.value as ModifiedFilter)}
+            className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-[0.95rem] normal-case tracking-normal text-slate-100"
+          >
+            <option value="all">За всё время</option>
+            <option value="7">За последние 7 дней</option>
+            <option value="30">За последние 30 дней</option>
+            <option value="90">За последние 90 дней</option>
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-2 text-[0.8rem] uppercase tracking-[0.2em] text-slate-400">
+          Сортировка
+          <select
+            value={sortOrder}
+            onChange={(event) => setSortOrder(event.target.value as SortOrder)}
+            className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-[0.95rem] normal-case tracking-normal text-slate-100"
+          >
+            <option value="updated">Последние изменённые</option>
+            <option value="created">Последние созданные</option>
           </select>
         </label>
       </div>
@@ -119,30 +161,30 @@ export default function LibrariesList({ items, className }: LibrariesListProps) 
       <div className="grid gap-4">
         {visibleItems.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-6 py-10 text-center text-sm text-slate-400">
-            No libraries found for current filters.
+            По выбранным фильтрам библиотеки не найдены.
           </div>
         ) : (
           visibleItems.map((library) => (
             <Card key={library.id} className="transition hover:border-slate-700/80">
               <CardHeader className="space-y-3">
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-2">
-                    <CardTitle className="flex flex-wrap items-center gap-2 text-[1.2rem]">
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <CardTitle className="flex min-w-0 items-center gap-2 text-[1.2rem]">
                       <span
                         title={library.title}
-                        className="block max-w-136 truncate"
+                        className="min-w-0 flex-1 truncate"
                       >
-                        {ellipsis(library.title, 56)}
+                        {library.title.trim()}
                       </span>
                       <span
                         className={cn(
-                          "rounded-full border px-2 py-0.5 text-[0.7rem] uppercase tracking-[0.18em]",
+                          "shrink-0 rounded-full border px-2 py-0.5 text-[0.7rem] uppercase tracking-[0.18em]",
                           library.isPublic
                             ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-200"
                             : "border-slate-700 bg-slate-900/60 text-slate-300"
                         )}
                       >
-                        {library.isPublic ? "Public" : "Private"}
+                        {library.isPublic ? "Публичная" : "Приватная"}
                       </span>
                     </CardTitle>
                     <CardDescription className="max-w-3xl text-base leading-relaxed">
@@ -158,7 +200,7 @@ export default function LibrariesList({ items, className }: LibrariesListProps) 
                     href={`/storage/libraries/${library.id}`}
                     className="inline-flex h-9 items-center rounded-md border border-slate-700 px-3 text-sm font-medium text-slate-100 transition hover:bg-slate-900/40"
                   >
-                    Open library
+                    Открыть
                   </Link>
                 </div>
               </CardHeader>
@@ -167,7 +209,7 @@ export default function LibrariesList({ items, className }: LibrariesListProps) 
                 <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2 lg:grid-cols-4">
                   <div className="rounded-lg border border-slate-800/70 bg-slate-900/50 px-3 py-2">
                     <p className="text-xs uppercase tracking-[0.15em] text-slate-500">
-                      Owner
+                      Владелец
                     </p>
                     <p className="mt-1 truncate font-medium" title={library.ownerId}>
                       {ellipsis(library.ownerId, 36)}
@@ -175,7 +217,7 @@ export default function LibrariesList({ items, className }: LibrariesListProps) 
                   </div>
                   <div className="rounded-lg border border-slate-800/70 bg-slate-900/50 px-3 py-2">
                     <p className="text-xs uppercase tracking-[0.15em] text-slate-500">
-                      Collaborators
+                      Участники
                     </p>
                     <p className="mt-1 font-medium">
                       {formatAccesses(library.accesses)}
@@ -183,13 +225,13 @@ export default function LibrariesList({ items, className }: LibrariesListProps) 
                   </div>
                   <div className="rounded-lg border border-slate-800/70 bg-slate-900/50 px-3 py-2">
                     <p className="text-xs uppercase tracking-[0.15em] text-slate-500">
-                      Created
+                      Создана
                     </p>
                     <p className="mt-1 font-medium">{formatDate(library.createdAt)}</p>
                   </div>
                   <div className="rounded-lg border border-slate-800/70 bg-slate-900/50 px-3 py-2">
                     <p className="text-xs uppercase tracking-[0.15em] text-slate-500">
-                      Updated
+                      Обновлена
                     </p>
                     <p className="mt-1 font-medium">{formatDate(library.updatedAt)}</p>
                   </div>

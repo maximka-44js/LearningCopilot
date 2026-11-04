@@ -5,7 +5,7 @@ import (
 )
 
 type CreateLibrary struct {
-	Title       string                 `json:"title"       validate:"required,max=100" example:"My library"`
+	Title       string                 `json:"title"       validate:"required,max=40" example:"My library"`
 	Description string                 `json:"description" validate:"max=1000"         example:"Library description"`
 	Public      bool                   `json:"public"      example:"false"`
 	Accesses    []entity.LibraryAccess `json:"accesses"`
@@ -20,7 +20,7 @@ type UpdateLibraryParams struct {
 }
 
 type UpdateLibrary struct {
-	Title       string                 `json:"title"       validate:"required,max=100" example:"My library"`
+	Title       string                 `json:"title"       validate:"required,max=40" example:"My library"`
 	Description string                 `json:"description" validate:"max=1000"         example:"Library description"`
 	Public      bool                   `json:"public"      example:"false"`
 	Accesses    []entity.LibraryAccess `json:"accesses"`

@@ -13,19 +13,20 @@ export function SignInCard() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Welcome back</CardTitle>
+        <CardTitle>Добро пожаловать</CardTitle>
         <CardDescription>
-          Sign in to continue with your account.
+          Войдите, чтобы продолжить работу.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <form action={signInWithKeycloak}>
           <Button type="submit" className="w-full">
-            Continue
+            Продолжить
           </Button>
         </form>
         <p className="text-xs text-slate-500">
-          By continuing, you agree to our Terms and Privacy Policy.
+          Продолжая, вы соглашаетесь с условиями использования и политикой
+          конфиденциальности.
         </p>
       </CardContent>
     </Card>

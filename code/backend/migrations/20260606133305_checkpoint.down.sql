@@ -1,0 +1,4 @@
+DROP INDEX IF EXISTS idx_vectorization_batch_checkpoints_status;
+DROP INDEX IF EXISTS idx_vectorization_batch_checkpoints_vectorization;
+
+DROP TABLE IF EXISTS vectorization_batch_checkpoints;

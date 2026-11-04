@@ -46,6 +46,6 @@ Thumbs.db
 # Markdown files
 *.md
 
-/app
-/worker
-/migrate
+app
+worker
+migrate

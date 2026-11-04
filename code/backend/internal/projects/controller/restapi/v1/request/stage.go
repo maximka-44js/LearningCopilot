@@ -13,7 +13,7 @@ type AddStageParams struct {
 
 // AddStage -.
 type AddStage struct {
-	Name       string     `json:"name" validate:"required,max=160" example:"Cell biology fundamentals"`
+	Name       string     `json:"name" validate:"required,max=40" example:"Cell biology fundamentals"`
 	Goal       string     `json:"goal" validate:"max=2000" example:"Build exam-ready understanding of cell structures and processes"`
 	Order      int        `json:"order" validate:"required,min=1" example:"1"`
 	DeadlineAt *time.Time `json:"deadline_at,omitempty" example:"2026-09-30T23:59:59Z"`
@@ -33,7 +33,7 @@ type GetStageByID struct {
 
 // UpdateStage -.
 type UpdateStage struct {
-	Name       string     `json:"name" validate:"required,max=160" example:"Cell biology and signaling"`
+	Name       string     `json:"name" validate:"required,max=40" example:"Cell biology and signaling"`
 	Goal       string     `json:"goal" validate:"max=2000" example:"Update milestones based on diagnostic results"`
 	Order      int        `json:"order" validate:"required,min=1" example:"2"`
 	DeadlineAt *time.Time `json:"deadline_at,omitempty" example:"2026-10-15T23:59:59Z"`

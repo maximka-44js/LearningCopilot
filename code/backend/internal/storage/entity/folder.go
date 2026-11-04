@@ -53,10 +53,10 @@ func (f *Folder) Validate() error {
 
 func (f *Folder) validateName() error {
 	name := strings.TrimSpace(f.Name)
-	if len(name) == 0 || len(name) > 100 {
+	if len(name) == 0 || len(name) > 40 {
 		return d.NewValidationError(
 			CodeFolderNameInvalid,
-			"Folder's name must contain between 1 and 100 symbols",
+			"Folder's name must contain between 1 and 40 symbols",
 		)
 	} else if !reSafeTitle.MatchString(name) {
 		return d.NewValidationError(

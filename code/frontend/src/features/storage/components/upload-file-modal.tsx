@@ -13,6 +13,7 @@ import {
     useConfirmUpload,
     useInitUpload,
     usePresignUploadPart,
+    useUploadFileDirect,
 } from "@/generated/api/files/files";
 import { getGetFolderContentsQueryKey } from "@/generated/api/folders/folders";
 import { orvalAxios } from "@/lib/orval/mutator";
@@ -91,22 +92,22 @@ function getFileExtension(fileName: string) {
 
 function formatUploadErrorByStatus(status?: number) {
   if (status === 400) {
-    return "Invalid upload data. Check selected file and options.";
+    return "Некорректные данные загрузки. Проверьте файл и параметры.";
   }
 
   if (status === 401) {
-    return "Session expired. Please sign in again.";
+    return "Сессия истекла. Войдите снова.";
   }
 
   if (status === 403) {
-    return "You do not have permission to upload into this location.";
+    return "У вас нет прав загружать файлы в это место.";
   }
 
   if (typeof status === "number" && status >= 500) {
-    return "Server error during upload. Please retry.";
+    return "Ошибка сервера при загрузке. Попробуйте ещё раз.";
   }
 
-  return "Upload failed. Please retry.";
+  return "Не удалось загрузить файл. Попробуйте ещё раз.";
 }
 
 function normalizeInitResponse(
@@ -336,10 +337,10 @@ function formatUploadErrorByClientFailure(error: unknown, fileSizeBytes?: number
   }
 
   if (typeof fileSizeBytes === "number" && fileSizeBytes >= 100 * 1024 * 1024) {
-    return "Large file upload was blocked before app received a response. Most likely backend/proxy body-size limit or missing CORS headers on error response (often 413/502/504).";
+    return "Загрузка большого файла заблокирована до ответа приложения. Возможно, превышен лимит размера запроса или отсутствуют CORS-заголовки.";
   }
 
-  return "Network/CORS failure during upload. Check backend CORS and proxy limits.";
+  return "Сетевая ошибка при загрузке. Проверьте CORS на сервере и лимиты прокси.";
 }
 
 function isUuid(value: string) {
@@ -430,6 +431,8 @@ export default function UploadFileModal({
   const effectiveLibraryId = libraryId.trim();
 
   const { mutateAsync: initUploadAsync, isPending: isInitPending } = useInitUpload();
+  const { mutateAsync: uploadFileDirectAsync, isPending: isDirectUploadPending } =
+    useUploadFileDirect();
   const { mutateAsync: presignPartAsync, isPending: isPresignPending } =
     usePresignUploadPart({
       request: {
@@ -456,7 +459,8 @@ export default function UploadFileModal({
     },
   });
 
-  const isPending = isInitPending || isPresignPending || isConfirmPending;
+  const isPending =
+    isInitPending || isDirectUploadPending || isPresignPending || isConfirmPending;
   const isBusy = isPending || isUploadingFlow;
 
   const resetActiveUpload = useCallback(() => {
@@ -488,7 +492,7 @@ export default function UploadFileModal({
     activeUpload.cancelRequested = true;
     activePartAbortControllerRef.current?.abort();
     setUploadUiStatus("uploading");
-    setUploadProgressLabel("Cancelling upload...");
+    setUploadProgressLabel("Отмена загрузки...");
     await requestAbortOnce();
     setUploadUiStatus("error");
     setUploadProgressLabel("Upload canceled.");
@@ -562,7 +566,7 @@ export default function UploadFileModal({
 
   const fileMetaText = useMemo(() => {
     if (!file) {
-      return "No file selected";
+      return "Файл не выбран";
     }
 
     const mb = (file.size / (1024 * 1024)).toFixed(2);
@@ -579,10 +583,10 @@ export default function UploadFileModal({
     });
 
     if (!parsed.success) {
-      const message = parsed.error.issues[0]?.message ?? "Invalid upload form values.";
+      const message = parsed.error.issues[0]?.message ?? "Проверьте данные загрузки.";
       setErrorMessage(message);
       toast({
-        title: "Check file",
+        title: "Проверьте файл",
         description: message,
         variant: "error",
       });
@@ -594,13 +598,42 @@ export default function UploadFileModal({
     setIsUploadingFlow(true);
     setUploadUiStatus("uploading");
     setUploadProgressPct(0);
-    setUploadProgressLabel("Initializing upload...");
+    setUploadProgressLabel("Инициализация загрузки...");
     setErrorMessage(null);
 
     // Hide the form while keeping upload flow running in component state.
     onClose();
 
     try {
+      if (parsed.data.file.size <= 15 * 1024 * 1024) {
+        await uploadFileDirectAsync({
+          data: {
+            library_id: parsed.data.libraryId,
+            folder_id: normalizedFolderId,
+            file: parsed.data.file,
+          },
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: getLibraryTreeQueryKey(effectiveLibraryId),
+        });
+        const normalizedCurrentFolderId = currentFolderId?.trim();
+        if (normalizedCurrentFolderId) {
+          queryClient.invalidateQueries({
+            queryKey: getGetFolderContentsQueryKey(normalizedCurrentFolderId),
+          });
+        }
+
+        setUploadProgressPct(100);
+        setUploadProgressLabel("Загрузка завершена.");
+        setUploadUiStatus("success");
+        toast({
+          title: "Файл загружен",
+          description: "Файл теперь доступен в структуре библиотеки.",
+        });
+        return;
+      }
+
       const initResponse = await initUploadAsync({
         data: {
           library_id: parsed.data.libraryId,
@@ -635,7 +668,7 @@ export default function UploadFileModal({
         const totalParts = Math.ceil(parsed.data.file.size / CHUNK_SIZE_BYTES);
         let uploadedBytes = 0;
         setUploadProgressPct(5);
-        setUploadProgressLabel(`Uploading parts (0/${totalParts})...`);
+        setUploadProgressLabel(`Загрузка частей (0/${totalParts})...`);
 
         for (let partIndex = 0; partIndex < totalParts; partIndex += 1) {
           throwIfCancelRequested();
@@ -684,25 +717,24 @@ export default function UploadFileModal({
             Math.max(5, Math.round((uploadedBytes / parsed.data.file.size) * 95))
           );
           setUploadProgressPct(progress);
-          setUploadProgressLabel(`Uploading parts (${partNumber}/${totalParts})...`);
+          setUploadProgressLabel(`Загрузка частей (${partNumber}/${totalParts})...`);
         }
       } else if (normalizedInit.presignUrl) {
         throwIfCancelRequested();
         setUploadProgressPct(15);
-        setUploadProgressLabel("Uploading file...");
-        const singlePartChecksum = await sha256Base64(parsed.data.file);
+        setUploadProgressLabel("Загрузка файла...");
         const partAbortController = new AbortController();
         activePartAbortControllerRef.current = partAbortController;
         const etag = await uploadBinaryPart(
           normalizedInit.presignUrl,
           parsed.data.file,
-          singlePartChecksum,
+          undefined,
           partAbortController.signal
         );
         activePartAbortControllerRef.current = null;
         throwIfCancelRequested();
         setUploadProgressPct(90);
-        setUploadProgressLabel("Upload complete. Finalizing...");
+        setUploadProgressLabel("Загрузка завершена. Завершение обработки...");
         completedParts.push({
           part_number: 1,
           etag,
@@ -712,7 +744,7 @@ export default function UploadFileModal({
       }
 
       setUploadProgressPct(98);
-      setUploadProgressLabel("Finalizing upload...");
+      setUploadProgressLabel("Завершение загрузки...");
       throwIfCancelRequested();
       const confirmResponse = await confirmUploadAsync({
         id: normalizedInit.fileId,
@@ -733,7 +765,7 @@ export default function UploadFileModal({
         setErrorMessage(message);
         setUploadUiStatus("error");
         toast({
-          title: "Upload failed",
+          title: "Ошибка загрузки",
           description: message,
           variant: "error",
         });
@@ -745,11 +777,11 @@ export default function UploadFileModal({
       }
 
       setUploadProgressPct(100);
-      setUploadProgressLabel("Upload finished.");
+      setUploadProgressLabel("Загрузка завершена.");
       setUploadUiStatus("success");
       toast({
-        title: "File uploaded",
-        description: "The file is now available in library root structure.",
+        title: "Файл загружен",
+        description: "Файл теперь доступен в структуре библиотеки.",
       });
 
       window.setTimeout(() => {
@@ -766,11 +798,11 @@ export default function UploadFileModal({
       if (isCanceledError) {
         await requestAbortOnce();
         setUploadUiStatus("error");
-        setUploadProgressLabel("Upload canceled.");
-        setErrorMessage("Upload canceled.");
+        setUploadProgressLabel("Загрузка отменена.");
+        setErrorMessage("Загрузка отменена.");
         toast({
-          title: "Upload canceled",
-          description: "Upload session was canceled.",
+          title: "Загрузка отменена",
+          description: "Сеанс загрузки отменён.",
           variant: "error",
         });
         return;
@@ -783,7 +815,7 @@ export default function UploadFileModal({
         setErrorMessage(diagnosticMessage);
         setUploadUiStatus("error");
         toast({
-          title: "Upload failed",
+          title: "Ошибка загрузки",
           description: diagnosticMessage,
           variant: "error",
         });
@@ -799,7 +831,7 @@ export default function UploadFileModal({
       setErrorMessage(message);
       setUploadUiStatus("error");
       toast({
-        title: "Upload failed",
+        title: "Ошибка загрузки",
         description: message,
         variant: "error",
       });
@@ -819,13 +851,13 @@ export default function UploadFileModal({
         <CardHeader className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
-              <CardTitle className="text-[1.2rem]">Upload file</CardTitle>
+              <CardTitle className="text-[1.2rem]">Загрузить файл</CardTitle>
               <CardDescription className="text-sm text-slate-400">
-                Upload file via multipart/form-data into current location.
+                Загрузите файл в текущую папку.
               </CardDescription>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isBusy}>
-              Close
+              Закрыть
             </Button>
           </div>
         </CardHeader>
@@ -833,7 +865,7 @@ export default function UploadFileModal({
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">File</label>
+              <label className="text-sm text-slate-300">Файл</label>
               <input
                 type="file"
                 onChange={(event) => {
@@ -847,17 +879,18 @@ export default function UploadFileModal({
             </div>
 
             <p className="text-xs text-slate-500">
-              library_id is set automatically. folder_id is inferred from current location.
+              Идентификатор библиотеки подставляется автоматически, а папка определяется
+              по текущему расположению.
             </p>
 
             {errorMessage ? <p className="text-sm text-rose-200">{errorMessage}</p> : null}
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose} disabled={isBusy}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isBusy || !effectiveLibraryId}>
-                {isBusy ? "Uploading..." : "Upload file"}
+                {isBusy ? "Загрузка..." : "Загрузить файл"}
               </Button>
             </div>
           </form>

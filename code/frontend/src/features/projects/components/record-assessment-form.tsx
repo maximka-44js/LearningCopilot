@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/providers/toast-provider";
+import { getApiErrorMessage } from "@/lib/api-error-message";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getGetTaskReadinessViewQueryKey } from "@/generated/api/projects-read-model/projects-read-model";
 import { getGetTaskByIdQueryKey, useRecordAssessmentSnapshot } from "@/generated/api/tasks/tasks";
@@ -43,9 +44,9 @@ const recordAssessmentSchema = z.object({
   normalized_score: z
     .string()
     .trim()
-    .refine((value) => Number.isFinite(Number(value)), "Score must be a number.")
+    .refine((value) => Number.isFinite(Number(value)), "Оценка должна быть числом.")
     .transform((value) => toOptionalNumber(value))
-    .refine((value) => value !== undefined && value >= 0 && value <= 100, "Score must be 0-100."),
+    .refine((value) => value !== undefined && value >= 0 && value <= 100, "Оценка должна быть от 0 до 100."),
 });
 
 export default function RecordAssessmentForm({
@@ -104,10 +105,10 @@ export default function RecordAssessmentForm({
     const parsed = recordAssessmentSchema.safeParse(form);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      const message = firstIssue?.message ?? "Invalid form values.";
+      const message = firstIssue?.message ?? "Проверьте значения в форме.";
       setErrors({ message });
       toast({
-        title: "Check the form",
+        title: "Проверьте форму",
         description: message,
         variant: "error",
       });
@@ -131,10 +132,10 @@ export default function RecordAssessmentForm({
 
       if (typeof (response as { status?: unknown }).status === "number") {
         if ((response as { status: number }).status !== 200) {
-          setErrors({ message: "Assessment could not be recorded." });
+          setErrors({ message: "Не удалось сохранить оценку." });
           toast({
-            title: "Assessment not saved",
-            description: "Server rejected the request.",
+            title: "Оценка не сохранена",
+            description: "Сервер отклонил запрос.",
             variant: "error",
           });
           return;
@@ -142,15 +143,16 @@ export default function RecordAssessmentForm({
       }
 
       toast({
-        title: "Assessment recorded",
-        description: "The snapshot was saved.",
+        title: "Оценка сохранена",
+        description: "Снимок оценки сохранён.",
       });
       onClose();
-    } catch {
-      setErrors({ message: "Assessment could not be recorded." });
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      setErrors({ message });
       toast({
-        title: "Assessment not saved",
-        description: "Something went wrong while saving the assessment.",
+        title: "Оценка не сохранена",
+        description: message,
         variant: "error",
       });
     }
@@ -166,33 +168,33 @@ export default function RecordAssessmentForm({
         <CardHeader className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-[1.2rem]">Record assessment</CardTitle>
+              <CardTitle className="text-[1.2rem]">Оценить задачу</CardTitle>
               <CardDescription className="text-sm text-slate-400">
-                Save a new assessment snapshot for this task block.
+                Сохраните новую оценку выбранного контекста задачи.
               </CardDescription>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
-              Close
+              Закрыть
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Block</label>
+              <label className="text-sm text-slate-300">Ограниченный контекст</label>
               <select
                 value={form.block_type}
                 onChange={(event) => handleChange("block_type", event.target.value)}
                 className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
               >
-                <option value="comprehension">Comprehension</option>
-                <option value="memorization">Memorization</option>
-                <option value="practice">Practice</option>
+                <option value="comprehension">Понимание</option>
+                <option value="memorization">Запоминание</option>
+                <option value="practice">Практика</option>
               </select>
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Self-assessment score</label>
+              <label className="text-sm text-slate-300">Самооценка</label>
               <input
                 inputMode="decimal"
                 value={form.normalized_score}
@@ -200,7 +202,7 @@ export default function RecordAssessmentForm({
                 className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
                 placeholder="71"
               />
-              <p className="text-xs text-slate-500">0-100 score used for mastery.</p>
+              <p className="text-xs text-slate-500">Оценка от 0 до 100 для расчёта освоения.</p>
             </div>
 
             {errors.message ? (
@@ -209,10 +211,10 @@ export default function RecordAssessmentForm({
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : "Save assessment"}
+                {isPending ? "Сохранение..." : "Сохранить оценку"}
               </Button>
             </div>
           </form>

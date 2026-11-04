@@ -28,28 +28,37 @@ type LibraryAccess struct {
 // @name entity.Library
 // @description Represents a library of documents.
 type Library struct {
-	ID          string `json:"id"          example:"550e8400-e29b-41d4-a716-446655440000"`
-	UserID      string `json:"user_id"     example:"550e8400-e29b-41d4-a716-446655440000"`
-	Accesses    []LibraryAccess
-	Title       string     `json:"title"       example:"My Library"`
-	Description string     `json:"description" example:"A library of my documents"`
-	Public      bool       `json:"public"      example:"false"`
-	CreatedAt   time.Time  `json:"created_at"  example:"2026-01-01T00:00:00Z"`
-	UpdatedAt   time.Time  `json:"updated_at"  example:"2026-01-01T00:00:00Z"`
-	DeletedAt   *time.Time `json:"deleted_at"  example:"2026-01-01T00:00:00Z"`
-	events      []d.DomainEvent
+	ID            string `json:"id"          example:"550e8400-e29b-41d4-a716-446655440000"`
+	UserID        string `json:"user_id"     example:"550e8400-e29b-41d4-a716-446655440000"`
+	OwnerUsername string `json:"owner_username,omitempty" example:"user12"`
+	StarCount     int64  `json:"star_count"`
+	Starred       bool   `json:"starred"`
+	Accesses      []LibraryAccess
+	Title         string     `json:"title"       example:"My Library"`
+	Description   string     `json:"description" example:"A library of my documents"`
+	Public        bool       `json:"public"      example:"false"`
+	CreatedAt     time.Time  `json:"created_at"  example:"2026-01-01T00:00:00Z"`
+	UpdatedAt     time.Time  `json:"updated_at"  example:"2026-01-01T00:00:00Z"`
+	DeletedAt     *time.Time `json:"deleted_at"  example:"2026-01-01T00:00:00Z"`
+	events        []d.DomainEvent
 }
 
-func NewLibrary(id, userID, title, description string, public bool, accesses []LibraryAccess) (Library, error) {
+type PublicLibrariesPage struct {
+	Libraries []Library `json:"libraries"`
+	HasMore   bool      `json:"has_more"`
+}
+
+func NewLibrary(id, userID, ownerUsername, title, description string, public bool, accesses []LibraryAccess) (Library, error) {
 	l := Library{
-		ID:          id,
-		UserID:      userID,
-		Accesses:    accesses,
-		Title:       title,
-		Description: description,
-		Public:      public,
-		CreatedAt:   time.Now().UTC(),
-		UpdatedAt:   time.Now().UTC(),
+		ID:            id,
+		UserID:        userID,
+		OwnerUsername: ownerUsername,
+		Accesses:      accesses,
+		Title:         title,
+		Description:   description,
+		Public:        public,
+		CreatedAt:     time.Now().UTC(),
+		UpdatedAt:     time.Now().UTC(),
 	}
 	if err := l.Validate(); err != nil {
 		return Library{}, err
@@ -77,10 +86,10 @@ func (l *Library) Validate() error {
 
 func (l *Library) validateName() error {
 	title := strings.TrimSpace(l.Title)
-	if len(title) == 0 || len(title) > 100 {
+	if len(title) == 0 || len(title) > 40 {
 		return d.NewValidationError(
 			CodeLibraryNameInvalid,
-			"Library's title must contain beetwen 1 and 100 symbols",
+			"Library's title must contain beetwen 1 and 40 symbols",
 		)
 	} else if !reSafeTitle.MatchString(title) {
 		return d.NewValidationError(

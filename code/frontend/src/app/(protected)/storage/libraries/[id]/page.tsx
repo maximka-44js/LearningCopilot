@@ -1,5 +1,5 @@
-import LibraryTreeContainer from "@/features/storage/components/library-tree-container";
 import { requireUserSession } from "@/features/auth/server/require-user-session";
+import LibraryTreeContainer from "@/features/storage/components/library-tree-container";
 
 type LibraryPageProps = {
   params: Promise<{ id: string }>;
@@ -15,10 +15,10 @@ export default async function LibraryPage({ params }: LibraryPageProps) {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
         <header className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-            Storage
+            Хранилище
           </p>
           <p className="max-w-2xl text-sm text-slate-400">
-            Browse top-level folders and files for this library.
+            Просматривайте папки и файлы этой библиотеки.
           </p>
         </header>
 

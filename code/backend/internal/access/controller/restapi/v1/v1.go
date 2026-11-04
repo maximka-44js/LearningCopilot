@@ -15,7 +15,7 @@ type V1 struct {
 }
 
 type createAPIKeyRequest struct {
-	Name      string     `json:"name" validate:"required,max=120"`
+	Name      string     `json:"name" validate:"required,max=40"`
 	Scopes    []string   `json:"scopes" validate:"required,min=1,dive,required"`
 	ExpiresAt *time.Time `json:"expires_at"`
 }

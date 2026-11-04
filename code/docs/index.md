@@ -1,26 +1,18 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
 hero:
-  name: "lc_docs"
-  text: "documentation"
-  tagline: My great project tagline
+  name: "Learning Copilot"
+  text: "Документация проекта"
+  tagline: Помощь пользователю и технические материалы
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Помощь
+      link: /help
     - theme: alt
-      text: API Examples
-      link: /api-examples
-
-features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+      text: Техническая документация
+      link: /technical/
 ---
 
-Документация собирается и публикуется вместе с основным приложением.
+Выберите нужный раздел в меню. Отчёт, образ продукта и пользовательские
+сценарии будут опубликованы в корне репозитория отдельно.

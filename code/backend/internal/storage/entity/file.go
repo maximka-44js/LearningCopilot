@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	maxFileNameLength = 100
+	maxFileNameLength = 40
 	maxFileSizeBytes  = int64(500 * 1024 * 1024)
 )
 
@@ -141,7 +141,7 @@ func (f *File) validateName() error {
 	if len(name) == 0 || len(name) > maxFileNameLength {
 		return d.NewValidationError(
 			CodeFileNameInvalid,
-			"File name must contain between 1 and 100 symbols",
+			"File name must contain between 1 and 40 symbols",
 		)
 	} else if !reSafeTitle.MatchString(name) {
 		return d.NewValidationError(

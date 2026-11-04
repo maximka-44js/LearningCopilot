@@ -7,5 +7,8 @@ export async function GET(request: Request) {
     url.searchParams.get("callbackUrl") ?? undefined
   );
 
-  return await signIn("keycloak", { redirectTo: callbackUrl });
+  return await signIn("keycloak", {
+    redirectTo: callbackUrl,
+    authorizationParams: { ui_locales: "ru" },
+  });
 }

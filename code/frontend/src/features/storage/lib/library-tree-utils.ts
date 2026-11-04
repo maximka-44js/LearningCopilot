@@ -6,7 +6,7 @@ export function isValidStorageName(value: string) {
 
 export function formatBytes(size?: number) {
   if (!Number.isFinite(size) || (size ?? 0) < 0) {
-    return "Unknown";
+    return "Неизвестно";
   }
 
   if (!size) {
@@ -27,15 +27,15 @@ export function formatBytes(size?: number) {
 
 export function formatDate(value?: string) {
   if (!value) {
-    return "Unknown";
+    return "Неизвестно";
   }
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return "Неизвестно";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("ru-RU", {
     year: "numeric",
     month: "short",
     day: "2-digit",

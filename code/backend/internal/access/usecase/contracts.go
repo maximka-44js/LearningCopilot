@@ -11,6 +11,7 @@ type APIKeys interface {
 	Create(ctx context.Context, in CreateAPIKeyInput) (CreateAPIKeyOutput, error)
 	List(ctx context.Context, userID string) ([]entity.APIKey, error)
 	Revoke(ctx context.Context, in RevokeAPIKeyInput) (entity.APIKey, error)
+	Delete(ctx context.Context, in RevokeAPIKeyInput) error
 	Rotate(ctx context.Context, in RotateAPIKeyInput) (CreateAPIKeyOutput, error)
 	Authenticate(ctx context.Context, in AuthenticateAPIKeyInput) (AuthenticateAPIKeyOutput, error)
 }

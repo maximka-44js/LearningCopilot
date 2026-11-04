@@ -82,37 +82,37 @@ func (s RecommendationService) GenerateForTaskWithPolicy(
 
 	if mem.Mastery < policy.LowMasteryThreshold && comp.Mastery >= policy.AcceptableMasteryThreshold {
 		candidates = append(candidates, newCandidate(task.ID, CompetencyBlockMemorization,
-			"Low memorization with acceptable comprehension",
-			[]string{"Export cards for fact repetition", "Run short retention check in 24 hours"},
+			"Низкий уровень запоминания при приемлемом понимании",
+			[]string{"Создать карточки для повторения фактов", "Провести короткую проверку запоминания через 24 часа"},
 			mem, policy, taskRiskFactor, urgencyFactor))
 	} else if mem.Mastery < policy.AcceptableMasteryThreshold && mem.RiskState >= RiskLevelHigh {
 		candidates = append(candidates, newCandidate(task.ID, CompetencyBlockMemorization,
-			"High risk memorization drop",
-			[]string{"Export cards for fact repetition", "Run short retention check in 24 hours"},
+			"Высокий риск снижения запоминания",
+			[]string{"Создать карточки для повторения фактов", "Провести короткую проверку запоминания через 24 часа"},
 			mem, policy, taskRiskFactor, urgencyFactor))
 	}
 
 	if comp.Mastery < policy.LowMasteryThreshold && mem.Mastery >= policy.AcceptableMasteryThreshold {
 		candidates = append(candidates, newCandidate(task.ID, CompetencyBlockComprehension,
-			"Low comprehension with acceptable memorization",
-			[]string{"Run why/what-if dialogue", "Retest causal links with mini-case"},
+			"Низкий уровень понимания при приемлемом запоминании",
+			[]string{"Провести диалог в формате «почему/что, если»", "Повторно проверить причинно-следственные связи на мини-кейсе"},
 			comp, policy, taskRiskFactor, urgencyFactor))
 	} else if comp.Mastery < policy.AcceptableMasteryThreshold && comp.RiskState >= RiskLevelHigh {
 		candidates = append(candidates, newCandidate(task.ID, CompetencyBlockComprehension,
-			"High risk comprehension drop",
-			[]string{"Run why/what-if dialogue", "Retest causal links with mini-case"},
+			"Высокий риск снижения понимания",
+			[]string{"Провести диалог в формате «почему/что, если»", "Повторно проверить причинно-следственные связи на мини-кейсе"},
 			comp, policy, taskRiskFactor, urgencyFactor))
 	}
 
 	if prac.Mastery < policy.LowMasteryThreshold {
 		candidates = append(candidates, newCandidate(task.ID, CompetencyBlockPractice,
-			"Low practical performance",
-			[]string{"Solve a sequence of applied tasks with increasing complexity", "Review and document typical mistakes"},
+			"Низкая практическая эффективность",
+			[]string{"Решить серию практических задач с постепенно возрастающей сложностью", "Разобрать и задокументировать типичные ошибки"},
 			prac, policy, taskRiskFactor, urgencyFactor))
 	} else if prac.Mastery < policy.AcceptableMasteryThreshold && prac.RiskState >= RiskLevelHigh {
 		candidates = append(candidates, newCandidate(task.ID, CompetencyBlockPractice,
-			"High risk practice drop",
-			[]string{"Solve a sequence of applied tasks with increasing complexity", "Review and document typical mistakes"},
+			"Высокий риск снижения практических навыков",
+			[]string{"Решить серию практических задач с постепенно возрастающей сложностью", "Разобрать и задокументировать типичные ошибки"},
 			prac, policy, taskRiskFactor, urgencyFactor))
 	}
 
@@ -124,8 +124,8 @@ func (s RecommendationService) GenerateForTaskWithPolicy(
 			candidates = append(candidates, recommendationCandidate{
 				rec: Recommendation{
 					TaskID:       task.ID,
-					Reason:       "High confidence-performance gap",
-					NextActions:  []string{"Start calibration session", "Reduce self-assessment weight in next decision cycle"},
+					Reason:       "Высокий разрыв между уверенностью и результатом",
+					NextActions:  []string{"Начать сессию калибровки", "Снизить вес самооценки в следующем цикле принятия решений"},
 					PriorityHint: ProjectPriorityHigh,
 				},
 				score: 1.4 * urgencyFactor,
@@ -137,8 +137,8 @@ func (s RecommendationService) GenerateForTaskWithPolicy(
 		candidates = append(candidates, recommendationCandidate{
 			rec: Recommendation{
 				TaskID:       task.ID,
-				Reason:       "Task is stable; maintain readiness",
-				NextActions:  []string{"Schedule next check by risk forecast", "Keep one mixed practice iteration"},
+				Reason:       "Задача стабильна; поддерживайте готовность",
+				NextActions:  []string{"Запланировать следующую проверку с учетом прогноза риска", "Сохранить одну смешанную итерацию практики"},
 				PriorityHint: ProjectPriorityNormal,
 			},
 			score: 0.2 * urgencyFactor,

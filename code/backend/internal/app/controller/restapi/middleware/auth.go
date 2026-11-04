@@ -43,7 +43,7 @@ func Auth(jwtManager *jwt.Manager, l logger.Interface, apiKeyAuth APIKeyAuthenti
 		}
 
 		if fromQuery {
-			userID, parseErr := jwtManager.ParseToken(token)
+			claims, parseErr := jwtManager.ParseClaims(token)
 			if parseErr != nil {
 				if isWebSocketUpgradeRequest(ctx) {
 					l.Error(parseErr, "restapi - auth - parse websocket query token")
@@ -53,7 +53,9 @@ func Auth(jwtManager *jwt.Manager, l logger.Interface, apiKeyAuth APIKeyAuthenti
 				return ctx.Status(http.StatusUnauthorized).JSON(errorResponse{Error: "invalid or expired token"})
 			}
 
-			ctx.Locals(ctxUserID, userID)
+			ctx.Locals(ctxUserID, claims.Subject)
+			ctx.Locals("username", claims.PreferredUsername)
+			ctx.Locals("displayName", claims.DisplayName())
 			ctx.Locals(ctxAuthType, authTypeJWT)
 
 			return ctx.Next()
@@ -81,13 +83,15 @@ func Auth(jwtManager *jwt.Manager, l logger.Interface, apiKeyAuth APIKeyAuthenti
 			return ctx.Next()
 		}
 
-		userID, err := jwtManager.ParseToken(token)
+		claims, err := jwtManager.ParseClaims(token)
 		if err != nil {
 			l.Error(err, "restapi - auth - parse token")
 			return ctx.Status(http.StatusUnauthorized).JSON(errorResponse{Error: "invalid or expired token"})
 		}
 
-		ctx.Locals(ctxUserID, userID)
+		ctx.Locals(ctxUserID, claims.Subject)
+		ctx.Locals("username", claims.PreferredUsername)
+		ctx.Locals("displayName", claims.DisplayName())
 		ctx.Locals(ctxAuthType, authTypeJWT)
 
 		return ctx.Next()

@@ -22,6 +22,27 @@ function decodeJwtExpiry(accessToken?: string) {
   }
 }
 
+function decodeJwtSubject(idToken?: string) {
+  if (!idToken) {
+    return undefined;
+  }
+
+  try {
+    const [, payload] = idToken.split(".");
+    if (!payload) {
+      return undefined;
+    }
+
+    const parsed = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf-8")
+    ) as { sub?: unknown };
+
+    return typeof parsed.sub === "string" ? parsed.sub : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 async function refreshAccessToken(token: Record<string, unknown>) {
   const issuer =
     process.env.KEYCLOAK_INTERNAL_ISSUER ?? process.env.KEYCLOAK_ISSUER;
@@ -118,7 +139,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
         issuer: publicIssuer,
         authorization: publicBase
-          ? `${publicBase}/protocol/openid-connect/auth`
+          ? {
+              url: `${publicBase}/protocol/openid-connect/auth`,
+              params: { ui_locales: "ru" },
+            }
           : undefined,
         token: internalBase
           ? `${internalBase}/protocol/openid-connect/token`
@@ -135,6 +159,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.accessToken = account.access_token;
         token.idToken = account.id_token;
         token.refreshToken = account.refresh_token;
+        if (typeof account.providerAccountId === "string") {
+          token.keycloakUserId = account.providerAccountId;
+        }
         const expiresAtMs = Number(account.expires_at);
         const expiresInMs = Number(account.expires_in ?? 300) * 1000;
         token.accessTokenExpires = Number.isFinite(expiresAtMs)
@@ -145,6 +172,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           : undefined;
         token.error = undefined;
         return token;
+      }
+
+      if (
+        typeof token.keycloakUserId !== "string" &&
+        typeof token.idToken === "string"
+      ) {
+        token.keycloakUserId = decodeJwtSubject(token.idToken);
       }
 
       if (!token.accessTokenExpires) {
@@ -172,6 +206,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return await refreshAccessToken(token);
     },
     async session({ session, token }) {
+      const keycloakUserId =
+        typeof token.keycloakUserId === "string"
+          ? token.keycloakUserId
+          : typeof token.idToken === "string"
+            ? decodeJwtSubject(token.idToken)
+            : undefined;
+      if (session.user && keycloakUserId) {
+        session.user.id = keycloakUserId;
+      }
       if (token?.accessToken) {
         session.accessToken = token.accessToken as string;
       }

@@ -22,11 +22,11 @@ type ProjectsListProps = {
 };
 
 const sortLabels: Record<SortKey, string> = {
-  readiness: "Readiness",
-  coverage: "Coverage",
-  deadline: "Deadline",
-  name: "Name",
-  risk: "Risk",
+  readiness: "Готовность",
+  coverage: "Охват",
+  deadline: "Дедлайн",
+  name: "Название",
+  risk: "Риск",
 };
 
 const riskRank: Record<string, number> = {
@@ -117,60 +117,60 @@ export default function ProjectsList({ items, className }: ProjectsListProps) {
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <label className="text-[0.8rem] uppercase tracking-[0.2em] text-slate-400">
-            Status
+            Статус
           </label>
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
             className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-[0.95rem] text-slate-100"
           >
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="paused">Paused</option>
-            <option value="archived">Archived</option>
+            <option value="all">Все</option>
+            <option value="active">Активные</option>
+            <option value="paused">Приостановленные</option>
+            <option value="archived">Архивные</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
           <label className="text-[0.8rem] uppercase tracking-[0.2em] text-slate-400">
-            Priority
+            Приоритет
           </label>
           <select
             value={priorityFilter}
             onChange={(event) => setPriorityFilter(event.target.value)}
             className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-[0.95rem] text-slate-100"
           >
-            <option value="all">All</option>
-            <option value="high">High</option>
-            <option value="normal">Normal</option>
-            <option value="low">Low</option>
+            <option value="all">Все</option>
+            <option value="high">Высокий</option>
+            <option value="normal">Обычный</option>
+            <option value="low">Низкий</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
           <label className="text-[0.8rem] uppercase tracking-[0.2em] text-slate-400">
-            Risk
+            Риск
           </label>
           <select
             value={riskFilter}
             onChange={(event) => setRiskFilter(event.target.value)}
             className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-[0.95rem] text-slate-100"
           >
-            <option value="all">All</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="all">Все</option>
+            <option value="critical">Критический</option>
+            <option value="high">Высокий</option>
+            <option value="medium">Средний</option>
+            <option value="low">Низкий</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
           <label className="text-[0.8rem] uppercase tracking-[0.2em] text-slate-400">
-            Track
+            Направление
           </label>
           <select
             value={trackFilter}
             onChange={(event) => setTrackFilter(event.target.value)}
             className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-[0.95rem] text-slate-100"
           >
-            <option value="all">All</option>
+            <option value="all">Все</option>
             {trackOptions.map((track) => (
               <option key={track} value={track}>
                 {track}
@@ -180,7 +180,7 @@ export default function ProjectsList({ items, className }: ProjectsListProps) {
         </div>
         <div className="flex items-center gap-2">
           <label className="text-[0.8rem] uppercase tracking-[0.2em] text-slate-400">
-            Sort
+            Сортировка
           </label>
           <select
             value={sortKey}
@@ -198,12 +198,12 @@ export default function ProjectsList({ items, className }: ProjectsListProps) {
             onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
             className="rounded-md border border-slate-800 bg-slate-950/70 px-3 py-2 text-[0.95rem] text-slate-100"
           >
-            {sortDir === "asc" ? "Asc" : "Desc"}
+            {sortDir === "asc" ? "По возрастанию" : "По убыванию"}
           </button>
         </div>
         <div className="flex items-center gap-2">
           <Button type="button" size="sm" onClick={() => setIsCreateOpen(true)}>
-            New project
+            Новый проект
           </Button>
         </div>
         <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export default function ProjectsList({ items, className }: ProjectsListProps) {
             href="/projects/policies"
             className={cn(buttonVariants({ size: "sm", variant: "outline" }))}
           >
-            Policy settings
+            Настройки политик
           </Link>
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function ProjectsList({ items, className }: ProjectsListProps) {
       <div className="grid gap-6">
         {visibleProjects.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-6 py-10 text-center text-sm text-slate-400">
-            No projects match the selected filters.
+            Проекты по выбранным фильтрам не найдены.
           </div>
         ) : (
           visibleProjects.map((item, index) => (

@@ -58,7 +58,7 @@ export default function LibraryTreeToolbar({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-2">
           <CardTitle className="text-lg">
-            {isBrowsingFolder ? "Folder contents" : "Root structure"}
+            {isBrowsingFolder ? "Содержимое папки" : "Структура"}
           </CardTitle>
           <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
             <button
@@ -66,7 +66,7 @@ export default function LibraryTreeToolbar({
               onClick={onGoToRoot}
               className="rounded border border-slate-700 px-2 py-0.5 transition hover:bg-slate-900/50"
             >
-              Root
+              root
             </button>
             {folderTrail.map((item, index) => (
               <div key={item.id} className="flex items-center gap-2">
@@ -90,9 +90,9 @@ export default function LibraryTreeToolbar({
             size="sm"
             onClick={onRename}
             disabled={!selectedSingleEntry || isActionLocked}
-            title="Rename selected"
+            title="Переименовать выбранное"
           >
-            {isRenameRunning ? "Renaming..." : "Rename"}
+            {isRenameRunning ? "Переименование..." : "Переименовать"}
           </Button>
           <Button
             type="button"
@@ -100,9 +100,9 @@ export default function LibraryTreeToolbar({
             size="sm"
             onClick={onCopy}
             disabled={!hasSelectedEntries || isActionLocked}
-            title="Copy selected (Ctrl/Cmd+C)"
+            title="Копировать выбранное (Ctrl/Cmd+C)"
           >
-            Copy
+            Копировать
           </Button>
           <Button
             type="button"
@@ -110,9 +110,9 @@ export default function LibraryTreeToolbar({
             size="sm"
             onClick={onCut}
             disabled={!hasSelectedEntries || isActionLocked}
-            title="Cut selected (Ctrl/Cmd+X)"
+            title="Вырезать выбранное (Ctrl/Cmd+X)"
           >
-            Cut
+            Вырезать
           </Button>
           <Button
             type="button"
@@ -120,15 +120,15 @@ export default function LibraryTreeToolbar({
             size="sm"
             onClick={onPaste}
             disabled={!canPaste || isActionLocked}
-            title={isCutClipboard ? "Move here (Ctrl/Cmd+V)" : "Paste (Ctrl/Cmd+V)"}
+            title={isCutClipboard ? "Переместить сюда (Ctrl/Cmd+V)" : "Вставить (Ctrl/Cmd+V)"}
           >
             {isClipboardPasteRunning
               ? isCutClipboard
-                ? "Moving..."
-                : "Pasting..."
+                ? "Перемещение..."
+                : "Вставка..."
               : isCutClipboard
-                ? "Move here"
-                : "Paste"}
+                ? "Переместить сюда"
+                : "Вставить"}
           </Button>
           <Button
             type="button"
@@ -136,10 +136,10 @@ export default function LibraryTreeToolbar({
             size="sm"
             onClick={onDelete}
             disabled={!hasSelectedEntries || isActionLocked}
-            title="Delete selected"
+            title="Удалить выбранное"
             className="hover:border-rose-500/50 hover:bg-rose-500/20 hover:text-rose-100"
           >
-            {isDeleteRunning ? "Deleting..." : "Delete"}
+            {isDeleteRunning ? "Удаление..." : "Удалить"}
           </Button>
           <Button
             type="button"
@@ -147,9 +147,9 @@ export default function LibraryTreeToolbar({
             size="sm"
             onClick={onDownload}
             disabled={!canDownloadSelectedFile || isActionLocked || isDownloadStarting}
-            title="Download selected file"
+            title="Скачать выбранный файл"
           >
-            {isDownloadStarting ? "Starting..." : "Download"}
+            {isDownloadStarting ? "Подготовка..." : "Скачать"}
           </Button>
           <Button
             type="button"
@@ -158,7 +158,7 @@ export default function LibraryTreeToolbar({
             onClick={onCreateFolder}
             disabled={isActionLocked}
           >
-            Create folder
+            Создать папку
           </Button>
           <Button
             type="button"
@@ -167,7 +167,7 @@ export default function LibraryTreeToolbar({
             onClick={onUploadFile}
             disabled={isUploadRunning}
           >
-            Upload file
+            Загрузить файл
           </Button>
         </div>
       </div>

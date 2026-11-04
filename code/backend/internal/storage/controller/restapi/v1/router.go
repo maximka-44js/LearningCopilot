@@ -29,6 +29,11 @@ func NewRoutes(storageGroup fiber.Router, lb usecase.Library, fd usecase.Folder,
 		middleware.RequireDomainAccess(entity.ScopeDomainStorage),
 	)
 	protected.Post("/libraries", r.createLibrary)
+	protected.Get("/libraries/public", r.listPublicLibraries)
+	protected.Post("/libraries/:id/star", r.starPublicLibrary)
+	protected.Delete("/libraries/:id/star", r.unstarPublicLibrary)
+	protected.Post("/libraries/:id/add", r.addPublicLibrary)
+	protected.Delete("/libraries/:id/subscription", r.removePublicLibrary)
 	protected.Get("/libraries/:id", r.getLibraryByID)
 	protected.Get("/libraries/:id/tree", r.getLibraryContents)
 	protected.Post("/libraries/:id/compress", r.compressLibrary)

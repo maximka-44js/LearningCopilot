@@ -23,25 +23,25 @@ export default function LibraryEntryInfoModal({ entry, onClose }: LibraryEntryIn
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="truncate text-lg">{entry.name}</CardTitle>
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
-              Close
+              Закрыть
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm text-slate-300">
             <p>
-              <span className="text-slate-500">Type:</span> {entry.kind === "folder" ? "Folder" : "File"}
+              <span className="text-slate-500">Тип:</span> {entry.kind === "folder" ? "Папка" : "Файл"}
             </p>
             <p>
-              <span className="text-slate-500">Updated:</span> {formatDate(entry.updatedAt)}
+              <span className="text-slate-500">Изменено:</span> {formatDate(entry.updatedAt)}
             </p>
             {entry.kind === "file" ? (
               <>
                 <p>
-                  <span className="text-slate-500">Size:</span> {formatBytes(entry.size)}
+                  <span className="text-slate-500">Размер:</span> {formatBytes(entry.size)}
                 </p>
                 <p>
-                  <span className="text-slate-500">MIME:</span> {entry.mimeType || "Unknown"}
+                  <span className="text-slate-500">MIME:</span> {entry.mimeType || "Неизвестно"}
                 </p>
               </>
             ) : null}

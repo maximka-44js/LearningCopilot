@@ -1,22 +1,24 @@
 import { z } from "zod";
 
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
+
 export const inputClassName =
   "h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100";
 
 const cappedWeight = z
   .number()
-  .min(0, "Weight must be 0 or higher.")
-  .max(10, "Weight looks too large (max 10).")
+  .min(0, "Вес не может быть отрицательным.")
+  .max(10, "Вес слишком большой (максимум — 10).")
   .optional();
 const penaltyMultiplier = z
   .number()
-  .min(0, "Penalty must be 0 or higher.")
-  .max(5, "Penalty looks too large (max 5).")
+  .min(0, "Штраф не может быть отрицательным.")
+  .max(5, "Штраф слишком большой (максимум — 5).")
   .optional();
 const percent = z
   .number()
-  .min(0, "Value must be between 0 and 100.")
-  .max(100, "Value must be between 0 and 100.")
+  .min(0, "Значение должно быть от 0 до 100.")
+  .max(100, "Значение должно быть от 0 до 100.")
   .optional();
 
 export const aggregationSchema = z.object({
@@ -39,9 +41,9 @@ export const recommendationSchema = z.object({
   low_mastery_threshold: percent,
   max_recommendations: z
     .number()
-    .int("Must be a whole number.")
-    .min(1, "Must be at least 1.")
-    .max(10, "Max recommendations capped at 10.")
+    .int("Введите целое число.")
+    .min(1, "Значение должно быть не меньше 1.")
+    .max(10, "Максимум — 10 рекомендаций.")
     .optional(),
 });
 
@@ -59,14 +61,18 @@ export const riskSchema = z.object({
 });
 
 export const projectSchema = z.object({
-  name: z.string().trim().min(1, "Name is required.").max(200),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Введите название проекта.")
+    .max(ENTITY_TITLE_MAX_LENGTH, `Название не должно превышать ${ENTITY_TITLE_MAX_LENGTH} символов.`),
   description: z.string().trim().max(4000).optional().or(z.literal("")),
   deadline: z
     .string()
     .optional()
     .refine(
       (value) => !value || !Number.isNaN(Date.parse(value)),
-      "Deadline must be a valid date."
+      "Введите корректную дату дедлайна."
     )
     .or(z.literal("")),
   priority: z.enum(["low", "normal", "high"]),

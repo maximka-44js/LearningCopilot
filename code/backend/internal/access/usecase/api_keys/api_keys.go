@@ -165,6 +165,26 @@ func (uc *UseCase) Revoke(ctx context.Context, in usecase.RevokeAPIKeyInput) (en
 	return apiKey, nil
 }
 
+func (uc *UseCase) Delete(ctx context.Context, in usecase.RevokeAPIKeyInput) error {
+	if err := ensureUUID(in.UserID, in.APIKeyID); err != nil {
+		return err
+	}
+
+	apiKey, err := uc.repo.GetByIDForUser(ctx, strings.TrimSpace(in.UserID), strings.TrimSpace(in.APIKeyID))
+	if err != nil {
+		return err
+	}
+	if !apiKey.IsRevokedAt(time.Now().UTC()) {
+		return d.NewValidationError(entity.CodeAPIKeyInvalid, "API key must be revoked before deletion")
+	}
+
+	if err := uc.repo.Delete(ctx, strings.TrimSpace(in.UserID), strings.TrimSpace(in.APIKeyID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (uc *UseCase) Rotate(ctx context.Context, in usecase.RotateAPIKeyInput) (usecase.CreateAPIKeyOutput, error) {
 	if err := ensureUUID(in.UserID, in.APIKeyID); err != nil {
 		return usecase.CreateAPIKeyOutput{}, err

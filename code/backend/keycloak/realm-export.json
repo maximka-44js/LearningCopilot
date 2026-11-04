@@ -1,6 +1,13 @@
 {
   "realm": "lc",
   "enabled": true,
+  "registrationAllowed": true,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "ru",
+    "en"
+  ],
+  "defaultLocale": "ru",
   "displayName": "LC",
   "loginTheme": "lc-keycloak-theme",
   "accountTheme": "lc-keycloak-theme",
@@ -19,7 +26,13 @@
       ],
       "webOrigins": [
         "https://learning-copilot-ivr.ru"
-      ]
+      ],
+      "frontchannelLogout": true,
+      "attributes": {
+        "frontchannel.logout.url": "https://learning-copilot-ivr.ru/api/auth/frontchannel-logout",
+        "frontchannel.logout.session.required": "true",
+        "post.logout.redirect.uris": "+"
+      }
     }
   ]
 }

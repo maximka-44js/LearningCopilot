@@ -20,5 +20,6 @@ func NewRoutes(accessGroup fiber.Router, apiKeys usecase.APIKeys, jwtManager *jw
 	protected.Post("", r.createAPIKey)
 	protected.Get("", r.listAPIKeys)
 	protected.Delete("/:id", r.revokeAPIKey)
+	protected.Delete("/:id/permanent", r.deleteAPIKey)
 	protected.Post("/:id/rotate", r.rotateAPIKey)
 }

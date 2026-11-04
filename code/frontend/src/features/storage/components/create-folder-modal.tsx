@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { useToast } from "@/components/providers/toast-provider";
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -42,11 +43,11 @@ const formSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "Folder name is required.")
-    .max(100, "Folder name must be at most 100 characters.")
+    .min(1, "Введите название папки.")
+    .max(ENTITY_TITLE_MAX_LENGTH, `Название папки должно содержать не более ${ENTITY_TITLE_MAX_LENGTH} символов.`)
     .refine(isValidStorageName, {
       message:
-        "Folder name may contain letters, numbers, spaces, '-' and '_' only. '.' and '..' are not allowed.",
+        "Название папки может содержать только буквы, цифры, пробелы, «-» и «_». «.» и «..» недопустимы.",
     }),
 });
 
@@ -107,10 +108,10 @@ export default function CreateFolderModal({
     const normalizedParentId = defaultParentId?.trim();
 
     if (!isUuid(normalizedLibraryId)) {
-      const message = "Library ID is invalid. Reload the page and try again.";
+      const message = "Некорректный ID библиотеки. Обновите страницу и попробуйте ещё раз.";
       setErrorMessage(message);
       toast({
-        title: "Folder not created",
+        title: "Папка не создана",
         description: message,
         variant: "error",
       });
@@ -118,10 +119,10 @@ export default function CreateFolderModal({
     }
 
     if (normalizedParentId && !isUuid(normalizedParentId)) {
-      const message = "Parent folder ID is invalid. Reload the page and try again.";
+      const message = "Некорректный ID родительской папки. Обновите страницу и попробуйте ещё раз.";
       setErrorMessage(message);
       toast({
-        title: "Folder not created",
+        title: "Папка не создана",
         description: message,
         variant: "error",
       });
@@ -130,10 +131,10 @@ export default function CreateFolderModal({
 
     const parsed = formSchema.safeParse(form);
     if (!parsed.success) {
-      const message = parsed.error.issues[0]?.message ?? "Invalid form values.";
+      const message = parsed.error.issues[0]?.message ?? "Проверьте значения в форме.";
       setErrorMessage(message);
       toast({
-        title: "Check form values",
+        title: "Проверьте значения",
         description: message,
         variant: "error",
       });
@@ -155,25 +156,25 @@ export default function CreateFolderModal({
           : undefined;
 
       if (typeof status === "number" && status >= 400) {
-        setErrorMessage("Folder could not be created.");
+        setErrorMessage("Не удалось создать папку.");
         toast({
-          title: "Folder not created",
-          description: "Server rejected the request.",
+          title: "Папка не создана",
+          description: "Сервер отклонил запрос.",
           variant: "error",
         });
         return;
       }
 
       toast({
-        title: "Folder created",
-        description: "Library tree has been updated.",
+        title: "Папка создана",
+        description: "Дерево библиотеки обновлено.",
       });
       onClose();
     } catch {
-      setErrorMessage("Folder could not be created.");
+      setErrorMessage("Не удалось создать папку.");
       toast({
-        title: "Folder not created",
-        description: "Something went wrong while creating folder.",
+        title: "Папка не создана",
+        description: "При создании папки произошла ошибка.",
         variant: "error",
       });
     }
@@ -189,13 +190,13 @@ export default function CreateFolderModal({
         <CardHeader className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
-              <CardTitle className="text-[1.2rem]">Create folder</CardTitle>
+              <CardTitle className="text-[1.2rem]">Создать папку</CardTitle>
               <CardDescription className="text-sm text-slate-400">
-                Add a new folder to this library.
+                Добавьте новую папку в эту библиотеку.
               </CardDescription>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
-              Close
+              Закрыть
             </Button>
           </div>
         </CardHeader>
@@ -203,31 +204,31 @@ export default function CreateFolderModal({
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Folder name</label>
+              <label className="text-sm text-slate-300">Название папки</label>
               <input
                 value={form.name}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, name: event.target.value }))
                 }
                 className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
-                placeholder="Project docs"
-                maxLength={100}
+                placeholder="Материалы проекта"
+                maxLength={ENTITY_TITLE_MAX_LENGTH}
                 required
               />
             </div>
 
             <p className="text-xs text-slate-500">
-              Parent folder is selected automatically from current location.
+              Родительская папка будет выбрана автоматически по текущему расположению.
             </p>
 
             {errorMessage ? <p className="text-sm text-rose-200">{errorMessage}</p> : null}
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create folder"}
+                {isPending ? "Создание..." : "Создать папку"}
               </Button>
             </div>
           </form>

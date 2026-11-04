@@ -60,14 +60,12 @@ export default function DeleteLibraryModal({
   const libraryId = normalizeLibraryId(library?.id);
   const expectedText = library?.title.trim() ?? "";
   const isConfirmTextValid = confirmText.trim() === expectedText;
-
-  const { mutateAsync, isPending } = useDeleteLibrary({
+  const { mutateAsync: deleteAsync, isPending: isDeletePending } = useDeleteLibrary({
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: getListLibrariesQueryKey(),
         });
-
         if (libraryId) {
           queryClient.invalidateQueries({
             queryKey: getGetLibraryByIdQueryKey(libraryId),
@@ -76,6 +74,7 @@ export default function DeleteLibraryModal({
       },
     },
   });
+  const isPending = isDeletePending;
 
   useEffect(() => {
     setIsMounted(true);
@@ -99,10 +98,10 @@ export default function DeleteLibraryModal({
     });
 
     if (!parsed.success) {
-      const message = parsed.error.issues[0]?.message ?? "Invalid delete form values.";
+      const message = parsed.error.issues[0]?.message ?? "Проверьте данные для удаления.";
       setErrorMessage(message);
       toast({
-        title: "Library not deleted",
+        title: "Библиотека не удалена",
         description: message,
         variant: "error",
       });
@@ -110,10 +109,10 @@ export default function DeleteLibraryModal({
     }
 
     if (!library) {
-      const message = "Library data is missing. Reload and try again.";
+      const message = "Данные библиотеки отсутствуют. Обновите страницу и попробуйте ещё раз.";
       setErrorMessage(message);
       toast({
-        title: "Library not deleted",
+        title: "Библиотека не удалена",
         description: message,
         variant: "error",
       });
@@ -121,17 +120,17 @@ export default function DeleteLibraryModal({
     }
 
     try {
-      const response = await mutateAsync({ id: parsed.data.libraryId });
+      const response = await deleteAsync({ id: parsed.data.libraryId });
       const status =
         typeof (response as { status?: unknown }).status === "number"
           ? (response as { status: number }).status
           : undefined;
 
       if (typeof status === "number" && status >= 400) {
-        const message = "Server rejected library deletion.";
+        const message = "Сервер отклонил удаление библиотеки.";
         setErrorMessage(message);
         toast({
-          title: "Library not deleted",
+          title: "Библиотека не удалена",
           description: message,
           variant: "error",
         });
@@ -139,16 +138,16 @@ export default function DeleteLibraryModal({
       }
 
       toast({
-        title: "Library deleted",
-        description: "Library has been removed.",
+        title: "Библиотека удалена",
+        description: "Библиотека удалена.",
       });
       onClose();
       router.push("/storage/libraries");
     } catch {
-      const message = "Something went wrong while deleting library.";
+      const message = "При удалении библиотеки произошла ошибка.";
       setErrorMessage(message);
       toast({
-        title: "Library not deleted",
+        title: "Библиотека не удалена",
         description: message,
         variant: "error",
       });
@@ -163,10 +162,13 @@ export default function DeleteLibraryModal({
     <div className="fixed inset-0 z-9999 grid place-items-center bg-slate-950/75 p-4 backdrop-blur-sm">
       <Card className="w-full max-w-xl border-rose-500/30">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-[1.2rem] text-rose-200">Delete library</CardTitle>
+          <CardTitle className="text-[1.2rem] text-rose-200">
+            Удалить библиотеку
+          </CardTitle>
           <CardDescription className="text-sm text-slate-300">
-            This action cannot be undone. This will permanently delete the library and
-            its storage data.
+            Библиотека будет удалена из вашего списка. Если вы владелец, она
+            будет удалена вместе со всеми данными; права остальных пользователей
+            не изменятся.
           </CardDescription>
         </CardHeader>
 
@@ -174,7 +176,7 @@ export default function DeleteLibraryModal({
           <form onSubmit={handleDelete} className="grid gap-4">
             <div className="rounded-md border border-slate-800 bg-slate-900/50 p-3 text-sm text-slate-300">
               <p>
-                To confirm, type library title:
+                Для подтверждения введите название библиотеки:
               </p>
               <p className="mt-2 rounded border border-slate-700 bg-slate-950/70 px-2 py-1 font-mono text-slate-100">
                 {expectedText}
@@ -182,12 +184,12 @@ export default function DeleteLibraryModal({
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm text-slate-300">Library title</label>
+              <label className="text-sm text-slate-300">Название библиотеки</label>
               <input
                 value={confirmText}
                 onChange={(event) => setConfirmText(event.target.value)}
                 className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
-                placeholder="Type exact library title"
+                placeholder="Введите точное название библиотеки"
                 required
               />
             </div>
@@ -196,14 +198,14 @@ export default function DeleteLibraryModal({
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button
                 type="submit"
                 disabled={isPending || !isConfirmTextValid}
                 className="bg-rose-500 text-white hover:bg-rose-400"
               >
-                {isPending ? "Deleting..." : "I understand, delete this library"}
+                {isPending ? "Удаление..." : "Понимаю, удалить библиотеку"}
               </Button>
             </div>
           </form>

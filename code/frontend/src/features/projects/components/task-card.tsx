@@ -21,7 +21,7 @@ type TaskCardProps = {
 };
 
 export default function TaskCard({ href, task, description, className }: TaskCardProps) {
-  const title = task.outcome?.trim() || "Task";
+  const title = task.outcome?.trim() || "Задача";
 
   return (
     <Card
@@ -36,12 +36,14 @@ export default function TaskCard({ href, task, description, className }: TaskCar
       >
         <CardHeader className="space-y-3 px-4 py-4 sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
-            <div className="space-y-2">
+            <div className="min-w-0 flex-1 space-y-2">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                Task
+                Задача
               </p>
-              <CardTitle className="text-[1.05rem] sm:text-[1.2rem]">
-                {title}
+              <CardTitle className="min-w-0 text-[1.05rem] sm:text-[1.2rem]">
+                <span className="block truncate" title={title}>
+                  {title}
+                </span>
               </CardTitle>
               <CardDescription className="max-w-2xl text-sm leading-relaxed sm:text-base">
                 {description?.trim() || ""}
@@ -55,7 +57,7 @@ export default function TaskCard({ href, task, description, className }: TaskCar
                     taskStatusDotClass(task.status)
                   )}
                 />
-                Status: {formatLabel(task.status)}
+                Статус: {formatLabel(task.status)}
               </span>
               <div className="flex flex-wrap gap-2">
                 <span
@@ -64,10 +66,10 @@ export default function TaskCard({ href, task, description, className }: TaskCar
                     badgeTone(task.risk)
                   )}
                 >
-                  Risk: {formatLabel(task.risk)}
+                  Риск: {formatLabel(task.risk)}
                 </span>
                 <span className="rounded-md border border-slate-800/70 bg-slate-900/60 px-2 py-1 text-slate-200">
-                  Priority: {formatLabel(task.priority)}
+                  Приоритет: {formatLabel(task.priority)}
                 </span>
               </div>
             </div>
@@ -76,7 +78,7 @@ export default function TaskCard({ href, task, description, className }: TaskCar
         <CardContent className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Metric
-              label="Readiness"
+              label="Готовность"
               value={formatPercent(task.readiness)}
               tone={metricTone(task.readiness)}
               progress={task.readiness}
@@ -84,7 +86,7 @@ export default function TaskCard({ href, task, description, className }: TaskCar
               highlightOnMobile
             />
             <Metric
-              label="Coverage"
+              label="Охват"
               value={formatPercent(task.coverage)}
               tone={metricTone(task.coverage)}
               progress={task.coverage}
@@ -92,16 +94,16 @@ export default function TaskCard({ href, task, description, className }: TaskCar
               highlightOnMobile
             />
             <Metric
-              label="Deadline"
+              label="Дедлайн"
               value={formatDate(task.deadline_at)}
               tone="slate"
               compactOnMobile
             />
           </div>
           <div className="hidden flex-wrap gap-4 text-sm text-slate-400 sm:flex sm:gap-6 sm:text-[0.95rem]">
-            <span>Created: {formatDate(task.created_at)}</span>
-            <span>Updated: {formatDate(task.updated_at)}</span>
-            <span>Archived: {formatDate(task.archived_at)}</span>
+            <span>Создана: {formatDate(task.created_at)}</span>
+            <span>Изменена: {formatDate(task.updated_at)}</span>
+            <span>Архивирована: {formatDate(task.archived_at)}</span>
           </div>
         </CardContent>
       </Link>

@@ -14,6 +14,7 @@ type APIKeyRepo interface {
 	GetByIDForUser(ctx context.Context, userID, apiKeyID string) (entity.APIKey, error)
 	GetByPrefix(ctx context.Context, keyPrefix string) (entity.APIKey, error)
 	Update(ctx context.Context, key *entity.APIKey) error
+	Delete(ctx context.Context, userID, apiKeyID string) error
 	TouchLastUsed(ctx context.Context, apiKeyID string, usedAt time.Time) error
 	StoreAudit(ctx context.Context, event APIKeyAuditEvent) error
 }

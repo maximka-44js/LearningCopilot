@@ -44,27 +44,27 @@ export default function ConfirmDeleteTaskModal({
     <div className="fixed inset-0 z-[9999] grid place-items-center bg-slate-950/70 p-4 backdrop-blur-sm">
       <Card className="w-full max-w-lg">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-[1.2rem]">Delete task</CardTitle>
+          <CardTitle className="text-[1.2rem]">Удалить задачу</CardTitle>
           <CardDescription className="text-sm text-slate-400">
-            This action cannot be undone. Type the task outcome to confirm.
+            Это действие нельзя отменить. Введите ожидаемый результат задачи.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-100">
-            This will permanently delete the task and its readiness history.
+            Задача и история её готовности будут удалены навсегда.
           </div>
           <div className="grid gap-2">
-            <label className="text-sm text-slate-300">Task outcome</label>
+            <label className="text-sm text-slate-300">Результат задачи</label>
             <input
               value={value}
               onChange={(event) => setValue(event.target.value)}
               className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
-              placeholder={normalizedOutcome || "Task outcome"}
+              placeholder={normalizedOutcome || "Результат задачи"}
             />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3">
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              Отмена
             </Button>
             <Button
               type="button"
@@ -72,7 +72,7 @@ export default function ConfirmDeleteTaskModal({
               disabled={!canDelete || isPending}
               className="bg-rose-500 text-white hover:bg-rose-400"
             >
-              {isPending ? "Deleting..." : "Delete task"}
+              {isPending ? "Удаление..." : "Удалить задачу"}
             </Button>
           </div>
         </CardContent>

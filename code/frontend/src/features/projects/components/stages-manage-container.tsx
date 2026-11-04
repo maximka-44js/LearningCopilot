@@ -65,7 +65,7 @@ export default function StagesManageContainer({ projectId }: { projectId: string
   if (isLoading) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading stages...
+        Загрузка этапов...
       </div>
     );
   }
@@ -73,7 +73,7 @@ export default function StagesManageContainer({ projectId }: { projectId: string
   if (isError || !filteredStages) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-        Unable to load stages right now.
+        Не удалось загрузить этапы. Попробуйте ещё раз позже.
       </div>
     );
   }
@@ -84,20 +84,20 @@ export default function StagesManageContainer({ projectId }: { projectId: string
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex-1">
             <label className="sr-only" htmlFor="stage-search">
-              Search stages
+              Поиск этапов
             </label>
             <input
               id="stage-search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search stages (name or goal)"
+              placeholder="Поиск этапов по названию или цели"
               className="h-10 w-full rounded-md border border-slate-800/70 bg-slate-950/60 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
             />
           </div>
 
           <div className="flex flex-wrap gap-2">
             <label className="sr-only" htmlFor="stage-status">
-              Filter by status
+              Фильтр по статусу
             </label>
             <select
               id="stage-status"
@@ -105,14 +105,14 @@ export default function StagesManageContainer({ projectId }: { projectId: string
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
               className="h-10 rounded-md border border-slate-800/70 bg-slate-950/60 px-3 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
             >
-              <option value="all">All statuses</option>
-              <option value="active">Active</option>
-              <option value="paused">Paused</option>
-              <option value="archived">Archived</option>
+              <option value="all">Все статусы</option>
+              <option value="active">Активные</option>
+              <option value="paused">Приостановленные</option>
+              <option value="archived">Архивные</option>
             </select>
 
             <label className="sr-only" htmlFor="stage-risk">
-              Filter by risk
+              Фильтр по риску
             </label>
             <select
               id="stage-risk"
@@ -120,11 +120,11 @@ export default function StagesManageContainer({ projectId }: { projectId: string
               onChange={(e) => setRiskFilter(e.target.value as RiskFilter)}
               className="h-10 rounded-md border border-slate-800/70 bg-slate-950/60 px-3 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
             >
-              <option value="all">All risks</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
+              <option value="all">Все уровни риска</option>
+              <option value="low">Низкий</option>
+              <option value="medium">Средний</option>
+              <option value="high">Высокий</option>
+              <option value="critical">Критический</option>
             </select>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function StagesManageContainer({ projectId }: { projectId: string
             variant="outline"
             onClick={() => setCreateOpen(true)}
           >
-            New stage
+            Новый этап
           </Button>
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function StagesManageContainer({ projectId }: { projectId: string
       <div className="grid gap-6">
         {filteredStages.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-6 py-10 text-center text-sm text-slate-400">
-            No stages match the current filters.
+            По выбранным фильтрам этапы не найдены.
           </div>
         ) : (
           filteredStages.map((stage, index) => (

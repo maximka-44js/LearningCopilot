@@ -38,27 +38,27 @@ const weightsSchema = z
     comprehensionParts: z
       .string()
       .trim()
-      .refine((value) => Number.isFinite(Number(value)), "Comprehension parts are required.")
+      .refine((value) => Number.isFinite(Number(value)), "Введите части понимания.")
       .transform((value) => Number(value))
-      .refine((value) => Number.isInteger(value) && value >= 0, "Parts must be 0 or more."),
+      .refine((value) => Number.isInteger(value) && value >= 0, "Количество частей не может быть отрицательным."),
     memorizationParts: z
       .string()
       .trim()
-      .refine((value) => Number.isFinite(Number(value)), "Memorization parts are required.")
+      .refine((value) => Number.isFinite(Number(value)), "Введите части запоминания.")
       .transform((value) => Number(value))
-      .refine((value) => Number.isInteger(value) && value >= 0, "Parts must be 0 or more."),
+      .refine((value) => Number.isInteger(value) && value >= 0, "Количество частей не может быть отрицательным."),
     practiceParts: z
       .string()
       .trim()
-      .refine((value) => Number.isFinite(Number(value)), "Practice parts are required.")
+      .refine((value) => Number.isFinite(Number(value)), "Введите части практики.")
       .transform((value) => Number(value))
-      .refine((value) => Number.isInteger(value) && value >= 0, "Parts must be 0 or more."),
+      .refine((value) => Number.isInteger(value) && value >= 0, "Количество частей не может быть отрицательным."),
   })
   .refine(
     (values) =>
       values.comprehensionParts + values.memorizationParts + values.practiceParts > 0,
     {
-      message: "At least one block must have a part.",
+      message: "Добавьте хотя бы одну часть в любой контекст.",
       path: ["comprehensionParts"],
     }
   );
@@ -184,10 +184,10 @@ export default function EditTaskWeightsForm({
     const parsed = weightsSchema.safeParse(form);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      const message = firstIssue?.message ?? "Invalid form values.";
+      const message = firstIssue?.message ?? "Проверьте значения в форме.";
       setErrors({ message });
       toast({
-        title: "Check the form",
+        title: "Проверьте форму",
         description: message,
         variant: "error",
       });
@@ -210,10 +210,10 @@ export default function EditTaskWeightsForm({
 
       if (typeof (response as { status?: unknown }).status === "number") {
         if ((response as { status: number }).status !== 200) {
-          setErrors({ message: "Weights could not be updated." });
+          setErrors({ message: "Не удалось обновить веса." });
           toast({
-            title: "Weights not updated",
-            description: "Server rejected the request.",
+            title: "Веса не обновлены",
+            description: "Сервер отклонил запрос.",
             variant: "error",
           });
           return;
@@ -221,15 +221,15 @@ export default function EditTaskWeightsForm({
       }
 
       toast({
-        title: "Weights updated",
-        description: "The task weights were saved.",
+        title: "Веса обновлены",
+        description: "Веса задачи сохранены.",
       });
       onClose();
     } catch {
-      setErrors({ message: "Weights could not be updated." });
+      setErrors({ message: "Не удалось обновить веса." });
       toast({
-        title: "Weights not updated",
-        description: "Something went wrong while saving the weights.",
+        title: "Веса не обновлены",
+        description: "При сохранении весов произошла ошибка.",
         variant: "error",
       });
     }
@@ -245,13 +245,13 @@ export default function EditTaskWeightsForm({
         <CardHeader className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-[1.2rem]">Edit block weights</CardTitle>
+              <CardTitle className="text-[1.2rem]">Изменить веса контекстов</CardTitle>
               <CardDescription className="text-sm text-slate-400">
-                Redefine the share of each competency block.
+                Настройте долю каждого учебного контекста.
               </CardDescription>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
-              Close
+              Закрыть
             </Button>
           </div>
         </CardHeader>
@@ -259,7 +259,7 @@ export default function EditTaskWeightsForm({
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Comprehension parts</label>
+                <label className="text-sm text-slate-300">Части понимания</label>
                 <input
                   inputMode="numeric"
                   value={form.comprehensionParts}
@@ -272,7 +272,7 @@ export default function EditTaskWeightsForm({
                 </span>
               </div>
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Memorization parts</label>
+                <label className="text-sm text-slate-300">Части запоминания</label>
                 <input
                   inputMode="numeric"
                   value={form.memorizationParts}
@@ -285,7 +285,7 @@ export default function EditTaskWeightsForm({
                 </span>
               </div>
               <div className="grid gap-2">
-                <label className="text-sm text-slate-300">Practice parts</label>
+                <label className="text-sm text-slate-300">Части практики</label>
                 <input
                   inputMode="numeric"
                   value={form.practiceParts}
@@ -301,14 +301,14 @@ export default function EditTaskWeightsForm({
 
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-slate-400">Total parts: {totalParts}</span>
+                <span className="text-slate-400">Всего частей: {totalParts}</span>
                 {totalParts > 0 ? (
-                  <span className="text-emerald-300">Ready</span>
+                  <span className="text-emerald-300">Готово</span>
                 ) : (
-                  <span className="text-amber-200">Add parts to continue</span>
+                  <span className="text-amber-200">Добавьте части, чтобы продолжить</span>
                 )}
               </div>
-              <span className="text-slate-500">Total weight: 100%</span>
+              <span className="text-slate-500">Общий вес: 100%</span>
             </div>
 
             {errors.message ? (
@@ -317,10 +317,10 @@ export default function EditTaskWeightsForm({
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isPending || !isDirty}>
-                {isPending ? "Saving..." : "Save weights"}
+                {isPending ? "Сохранение..." : "Сохранить веса"}
               </Button>
             </div>
           </form>

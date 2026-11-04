@@ -15,11 +15,11 @@ export default async function ProjectStagesPage({
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
         <header className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-            Project
+            Проект
           </p>
-          <h1 className="text-3xl font-semibold">Stages</h1>
+          <h1 className="text-3xl font-semibold">Этапы</h1>
           <p className="max-w-2xl text-sm text-slate-400">
-            Review and manage the stages in this project.
+            Просматривайте и управляйте этапами этого проекта.
           </p>
         </header>
 

@@ -183,6 +183,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/access/api-keys/{id}/permanent": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Permanently delete a revoked API key",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "access"
+                ],
+                "summary": "Delete API key",
+                "operationId": "delete-api-key",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "API key ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/access/api-keys/{id}/rotate": {
             "post": {
                 "security": [
@@ -4619,6 +4669,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/libraries/public": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "List public libraries available in the global catalog",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "libraries"
+                ],
+                "summary": "List public libraries",
+                "operationId": "list-public-libraries",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search in title, description, or owner username",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order: newest or popular",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of libraries to return (default 20, maximum 50)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of libraries to skip",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_storage_entity.PublicLibrariesPage"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/libraries/{id}": {
             "get": {
                 "security": [
@@ -4822,6 +4936,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage/libraries/{id}/add": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add a public library to the current user's library list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "libraries"
+                ],
+                "summary": "Add public library",
+                "operationId": "add-public-library",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Library ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Library"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage/libraries/{id}/compress": {
             "post": {
                 "security": [
@@ -4874,6 +5041,114 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/libraries/{id}/star": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "libraries"
+                ],
+                "summary": "Star public library",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Library ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "libraries"
+                ],
+                "summary": "Unstar public library",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Library ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/storage/libraries/{id}/subscription": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove a public library from the current user's library list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "libraries"
+                ],
+                "summary": "Unpin public library",
+                "operationId": "remove-public-library",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Library ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/github_com_maximka-44js_lc_internal_app_domain.AppError"
                         }
@@ -5570,7 +5845,7 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 40
                 },
                 "target_folder_id": {
                     "type": "string"
@@ -5582,7 +5857,7 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string",
-                    "maxLength": 100,
+                    "maxLength": 40,
                     "example": "Project docs copy"
                 },
                 "target_parent_id": {
@@ -5604,7 +5879,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 100,
+                    "maxLength": 40,
                     "example": "Project docs"
                 },
                 "parent_id": {
@@ -5636,7 +5911,7 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string",
-                    "maxLength": 100,
+                    "maxLength": 40,
                     "example": "My library"
                 }
             }
@@ -5664,7 +5939,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 40
                 },
                 "size": {
                     "type": "integer",
@@ -5675,7 +5950,6 @@ const docTemplate = `{
         "github_com_maximka-44js_lc_internal_storage_controller_restapi_v1_request.PresignPart": {
             "type": "object",
             "required": [
-                "checksum_sha256",
                 "part_number",
                 "size",
                 "upload_id"
@@ -5708,7 +5982,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 40
                 }
             }
         },
@@ -5720,7 +5994,7 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string",
-                    "maxLength": 100,
+                    "maxLength": 40,
                     "example": "Project docs"
                 },
                 "parent_id": {
@@ -5752,7 +6026,7 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string",
-                    "maxLength": 100,
+                    "maxLength": 40,
                     "example": "My library"
                 }
             }
@@ -5892,9 +6166,19 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
+                "owner_username": {
+                    "type": "string",
+                    "example": "user12"
+                },
                 "public": {
                     "type": "boolean",
                     "example": false
+                },
+                "star_count": {
+                    "type": "integer"
+                },
+                "starred": {
+                    "type": "boolean"
                 },
                 "title": {
                     "type": "string",
@@ -5919,6 +6203,20 @@ const docTemplate = `{
                 },
                 "userID": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_maximka-44js_lc_internal_storage_entity.PublicLibrariesPage": {
+            "type": "object",
+            "properties": {
+                "has_more": {
+                    "type": "boolean"
+                },
+                "libraries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_maximka-44js_lc_internal_storage_entity.Library"
+                    }
                 }
             }
         },
@@ -5997,7 +6295,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 120
+                    "maxLength": 40
                 },
                 "scopes": {
                     "type": "array",
@@ -6328,7 +6626,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 160,
+                    "maxLength": 40,
                     "example": "Cell biology fundamentals"
                 },
                 "order": {
@@ -6366,7 +6664,7 @@ const docTemplate = `{
                 },
                 "outcome": {
                     "type": "string",
-                    "maxLength": 2000,
+                    "maxLength": 40,
                     "example": "Explain immune response mechanisms and solve case questions"
                 },
                 "policy": {
@@ -6426,7 +6724,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 200,
+                    "maxLength": 40,
                     "example": "Prepare for microbiology exam"
                 },
                 "priority": {
@@ -6712,7 +7010,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 200,
+                    "maxLength": 40,
                     "example": "Prepare for microbiology exam"
                 },
                 "priority": {
@@ -6748,7 +7046,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 160,
+                    "maxLength": 40,
                     "example": "Cell biology and signaling"
                 },
                 "order": {
@@ -6778,7 +7076,7 @@ const docTemplate = `{
                 },
                 "outcome": {
                     "type": "string",
-                    "maxLength": 2000,
+                    "maxLength": 40,
                     "example": "Explain immune response mechanisms using mixed exam formats"
                 },
                 "priority": {

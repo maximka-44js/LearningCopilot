@@ -63,12 +63,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       {isMounted
         ? createPortal(
-            <div className="fixed right-6 top-6 z-[9999] flex w-full max-w-sm flex-col gap-3">
+            <div
+              className="pointer-events-none fixed right-6 top-6 z-[2147483647] flex w-full max-w-sm flex-col gap-3"
+              aria-live="polite"
+              aria-atomic="false"
+            >
               {toasts.map((item) => (
                 <div
                   key={item.id}
+                  role={item.variant === "error" ? "alert" : "status"}
                   className={cn(
-                    "rounded-lg border px-4 py-3 shadow-lg backdrop-blur",
+                    "pointer-events-auto rounded-lg border px-4 py-3 shadow-lg",
                     toastTone(item.variant ?? "default")
                   )}
                 >
@@ -86,7 +91,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                       onClick={() => removeToast(item.id)}
                       className="text-xs text-slate-400 hover:text-slate-100"
                     >
-                      Close
+                      Закрыть
                     </button>
                   </div>
                 </div>

@@ -9,11 +9,11 @@ export default async function ProjectPoliciesPage() {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
         <header className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-            Projects
+            Проекты
           </p>
-          <h1 className="text-3xl font-semibold">Policy settings</h1>
+          <h1 className="text-3xl font-semibold">Настройки политик</h1>
           <p className="max-w-2xl text-sm text-slate-400">
-            Global defaults for aggregation, calibration, recommendation, and risk.
+            Общие настройки агрегации, калибровки, рекомендаций и рисков.
           </p>
         </header>
 

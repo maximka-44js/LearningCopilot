@@ -267,10 +267,10 @@ func (t *Task) validateIDs() error {
 
 func (t *Task) validateOutcome() error {
 	outcome := strings.TrimSpace(t.Outcome)
-	if len(outcome) == 0 || len(outcome) > 2000 {
+	if len(outcome) == 0 || len(outcome) > maxEntityTitleLength {
 		return d.NewValidationError(
 			CodeTaskOutcomeInvalid,
-			"Task outcome must contain between 1 and 2000 symbols",
+			"Task outcome must contain between 1 and 40 symbols",
 		)
 	}
 	return nil

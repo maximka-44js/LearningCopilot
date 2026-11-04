@@ -9,6 +9,8 @@ import (
 	d "github.com/maximka-44js/lc/internal/app/domain"
 )
 
+const maxEntityTitleLength = 40
+
 type ProjectStatus string // @name entity.ProjectStatus
 
 const (
@@ -208,10 +210,10 @@ func (p *Project) validateIDs() error {
 
 func (p *Project) validateName() error {
 	name := strings.TrimSpace(p.Name)
-	if len(name) == 0 || len(name) > 200 {
+	if len(name) == 0 || len(name) > maxEntityTitleLength {
 		return d.NewValidationError(
 			CodeProjectNameInvalid,
-			"Project name must contain between 1 and 200 symbols",
+			"Project name must contain between 1 and 40 symbols",
 		)
 	}
 	return nil

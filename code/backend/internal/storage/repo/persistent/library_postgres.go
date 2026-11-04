@@ -55,8 +55,8 @@ func (r *LibRepo) Store(ctx context.Context, lib *entity.Library) error {
 	// Вставка библиотеки
 	sql, args, err := r.Builder.
 		Insert("libraries").
-		Columns("id", "user_id", "title", "description", "public", "created_at", "updated_at").
-		Values(lib.ID, lib.UserID, lib.Title, lib.Description, lib.Public, lib.CreatedAt, lib.UpdatedAt).
+		Columns("id", "user_id", "owner_username", "title", "description", "public", "created_at", "updated_at").
+		Values(lib.ID, lib.UserID, lib.OwnerUsername, lib.Title, lib.Description, lib.Public, lib.CreatedAt, lib.UpdatedAt).
 		ToSql()
 
 	if err != nil {
@@ -107,7 +107,7 @@ func (r *LibRepo) Store(ctx context.Context, lib *entity.Library) error {
 // GetByID -.
 func (r *LibRepo) GetByID(ctx context.Context, userID, libID string) (entity.Library, error) {
 	sql, args, err := r.Builder.
-		Select("l.id, l.user_id, l.title, l.description, l.public, l.created_at, l.updated_at").
+		Select("l.id, l.user_id, l.owner_username, l.title, l.description, l.public, l.created_at, l.updated_at").
 		From("libraries l").
 		LeftJoin("library_accesses la ON la.library_id = l.id AND la.user_id = ?", userID).
 		Where(sq.Eq{"l.id": libID}).
@@ -129,7 +129,7 @@ func (r *LibRepo) GetByID(ctx context.Context, userID, libID string) (entity.Lib
 	var lib entity.Library
 
 	err = r.Pool.QueryRow(ctx, sql, args...).
-		Scan(&lib.ID, &lib.UserID, &lib.Title, &lib.Description, &lib.Public, &lib.CreatedAt, &lib.UpdatedAt)
+		Scan(&lib.ID, &lib.UserID, &lib.OwnerUsername, &lib.Title, &lib.Description, &lib.Public, &lib.CreatedAt, &lib.UpdatedAt)
 
 	if err != nil {
 		return entity.Library{}, r.handleErr(err)
@@ -355,14 +355,54 @@ WHERE library_id = $1 AND deleted_at IS NULL
 	return deletedSize, nil
 }
 
+func (r *LibRepo) RemoveUserAccess(ctx context.Context, userID, libID string) error {
+	tx := postgres.TxFromContext(ctx)
+	ownsTx := false
+	if tx == nil {
+		var err error
+		tx, err = r.Pool.Begin(ctx)
+		if err != nil {
+			return d.NewAppError(entity.CodeUndefined, "Internal error", d.KindInternal, nil)
+		}
+		ownsTx = true
+		defer func() {
+			_ = tx.Rollback(ctx)
+		}()
+	}
+
+	if _, err := tx.Exec(ctx,
+		`DELETE FROM library_accesses WHERE library_id = $1 AND user_id = $2`,
+		libID,
+		userID,
+	); err != nil {
+		return r.handleErr(err)
+	}
+
+	if _, err := tx.Exec(ctx,
+		`DELETE FROM library_subscriptions WHERE library_id = $1 AND user_id = $2`,
+		libID,
+		userID,
+	); err != nil {
+		return r.handleErr(err)
+	}
+
+	if ownsTx {
+		if err := tx.Commit(ctx); err != nil {
+			return r.handleErr(err)
+		}
+	}
+	return nil
+}
+
 func (r *LibRepo) List(ctx context.Context, userID string) ([]entity.Library, error) {
 	sql, args, err := r.Builder.
-		Select("l.id, l.user_id, l.title, l.description, l.public, l.created_at, l.updated_at, l.deleted_at").
+		Select("l.id, l.user_id, l.owner_username, l.title, l.description, l.public, l.created_at, l.updated_at, l.deleted_at").
 		From("libraries l").
 		Where(sq.Eq{"l.deleted_at": nil}).
 		Where(sq.Or{
 			sq.Eq{"l.user_id": userID},
 			sq.Expr("EXISTS (SELECT 1 FROM library_accesses la WHERE la.library_id = l.id AND la.user_id = ?)", userID),
+			sq.Expr("EXISTS (SELECT 1 FROM library_subscriptions ls WHERE ls.library_id = l.id AND ls.user_id = ?)", userID),
 		}).
 		OrderBy("l.created_at DESC").
 		ToSql()
@@ -388,6 +428,7 @@ func (r *LibRepo) List(ctx context.Context, userID string) ([]entity.Library, er
 		err = rows.Scan(
 			&lib.ID,
 			&lib.UserID,
+			&lib.OwnerUsername,
 			&lib.Title,
 			&lib.Description,
 			&lib.Public,
@@ -454,4 +495,111 @@ func (r *LibRepo) List(ctx context.Context, userID string) ([]entity.Library, er
 	}
 
 	return libraries, nil
+}
+
+func (r *LibRepo) ListPublic(ctx context.Context, userID, search, sort string, limit, offset int) (entity.PublicLibrariesPage, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	orderBy := "l.updated_at DESC, l.id DESC"
+	if sort == "popular" {
+		orderBy = "COUNT(ls.library_id) DESC, l.updated_at DESC, l.id DESC"
+	}
+	sql, args, err := r.Builder.
+		Select("l.id, l.user_id, l.owner_username, l.title, l.description, l.public, l.created_at, l.updated_at, l.deleted_at, COUNT(ls.library_id) AS star_count, COUNT(me.library_id) > 0 AS starred").
+		From("libraries l").
+		LeftJoin("library_stars ls ON ls.library_id = l.id").
+		LeftJoin("library_stars me ON me.library_id = l.id AND me.user_id = ?", userID).
+		Where(sq.Eq{"l.public": true}).
+		Where(sq.Eq{"l.deleted_at": nil}).
+		Where(sq.Or{
+			sq.Expr("l.title ILIKE ?", "%"+search+"%"),
+			sq.Expr("l.description ILIKE ?", "%"+search+"%"),
+			sq.Expr("l.owner_username ILIKE ?", "%"+search+"%"),
+		}).
+		GroupBy("l.id").
+		OrderBy(orderBy).
+		Limit(uint64(limit + 1)).
+		Offset(uint64(offset)).
+		ToSql()
+	if err != nil {
+		return entity.PublicLibrariesPage{}, d.NewAppError(entity.CodeUndefined, "Internal error", d.KindInternal, nil)
+	}
+
+	rows, err := r.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return entity.PublicLibrariesPage{}, r.handleErr(err)
+	}
+	defer rows.Close()
+
+	libraries := make([]entity.Library, 0)
+	for rows.Next() {
+		var lib entity.Library
+		if err := rows.Scan(&lib.ID, &lib.UserID, &lib.OwnerUsername, &lib.Title, &lib.Description, &lib.Public, &lib.CreatedAt, &lib.UpdatedAt, &lib.DeletedAt, &lib.StarCount, &lib.Starred); err != nil {
+			return entity.PublicLibrariesPage{}, r.handleErr(err)
+		}
+		libraries = append(libraries, lib)
+	}
+	if err := rows.Err(); err != nil {
+		return entity.PublicLibrariesPage{}, r.handleErr(err)
+	}
+	hasMore := len(libraries) > limit
+	if hasMore {
+		libraries = libraries[:limit]
+	}
+	return entity.PublicLibrariesPage{Libraries: libraries, HasMore: hasMore}, nil
+}
+
+func (r *LibRepo) StarPublic(ctx context.Context, userID, libID string) error {
+	_, err := r.Pool.Exec(ctx, `INSERT INTO library_stars (library_id, user_id)
+		SELECT id, $1 FROM libraries WHERE id = $2 AND public = true AND deleted_at IS NULL
+		ON CONFLICT (library_id, user_id) DO NOTHING`, userID, libID)
+	if err == nil {
+		return nil
+	}
+	return r.handleErr(err)
+}
+
+func (r *LibRepo) UnstarPublic(ctx context.Context, userID, libID string) error {
+	_, err := r.Pool.Exec(ctx, `DELETE FROM library_stars WHERE library_id = $1 AND user_id = $2`, libID, userID)
+	if err == nil {
+		return nil
+	}
+	return r.handleErr(err)
+}
+
+func (r *LibRepo) AddPublicSubscription(ctx context.Context, userID, libID string) error {
+	sql, args, err := r.Builder.
+		Insert("library_subscriptions").
+		Columns("library_id", "user_id").
+		Values(libID, userID).
+		Suffix("ON CONFLICT (library_id, user_id) DO NOTHING").
+		ToSql()
+	if err != nil {
+		return d.NewAppError(entity.CodeUndefined, "Internal error", d.KindInternal, nil)
+	}
+	_, err = r.Pool.Exec(ctx, sql, args...)
+	if err != nil {
+		return r.handleErr(err)
+	}
+	return nil
+}
+
+func (r *LibRepo) RemovePublicSubscription(ctx context.Context, userID, libID string) error {
+	sql, args, err := r.Builder.
+		Delete("library_subscriptions").
+		Where(sq.Eq{"library_id": libID, "user_id": userID}).
+		ToSql()
+	if err != nil {
+		return d.NewAppError(entity.CodeUndefined, "Internal error", d.KindInternal, nil)
+	}
+	_, err = r.Pool.Exec(ctx, sql, args...)
+	if err != nil {
+		return r.handleErr(err)
+	}
+	return nil
 }

@@ -28,17 +28,17 @@ export const API_KEY_SCOPE_PRESETS: ReadonlyArray<{
 }> = [
   {
     id: "full",
-    label: "All scopes",
+    label: "Все области",
     scopes: [...API_KEY_SCOPE_VALUES],
   },
   {
     id: "projects-readonly",
-    label: "Projects readonly",
+    label: "Проекты: только чтение",
     scopes: ["projects:read"],
   },
 ];
 
 export const API_KEY_SCOPE_RULES = {
   readMethods: "GET, HEAD, OPTIONS",
-  writeMethods: "POST, PUT, PATCH, DELETE and other non-read methods",
+  writeMethods: "POST, PUT, PATCH, DELETE и другие методы записи",
 } as const;

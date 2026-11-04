@@ -11,7 +11,7 @@ export default function ProjectsListContainer() {
   if (isLoading) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading projects...
+        Загрузка проектов...
       </div>
     );
   }
@@ -25,7 +25,7 @@ export default function ProjectsListContainer() {
   if (isError || !rawProjects) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-        Unable to load projects right now.
+        Не удалось загрузить проекты. Попробуйте ещё раз позже.
       </div>
     );
   }

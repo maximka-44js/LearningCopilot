@@ -4,7 +4,10 @@ import { auth, signIn, signOut } from "@/auth";
 import { redirect } from "next/navigation";
 
 export async function signInWithKeycloak() {
-  await signIn("keycloak", { redirectTo: "/" });
+  await signIn("keycloak", {
+    redirectTo: "/",
+    authorizationParams: { ui_locales: "ru" },
+  });
 }
 
 export async function signOutWithKeycloak() {
@@ -43,10 +46,20 @@ export async function signOutWithKeycloak() {
 export async function openAccountConsole() {
   const issuer =
     process.env.KEYCLOAK_PUBLIC_ISSUER ?? process.env.KEYCLOAK_ISSUER;
+  const appUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL;
+  const clientId = process.env.KEYCLOAK_CLIENT_ID ?? "lc-frontend";
 
-  if (!issuer) {
-    throw new Error("Missing KEYCLOAK_ISSUER");
+  if (!issuer || !appUrl) {
+    throw new Error("Missing Keycloak account configuration");
   }
 
-  redirect(`${issuer.replace(/\/$/, "")}/account`);
+  const accountUrl = new URL(
+    "account",
+    issuer.endsWith("/") ? issuer : `${issuer}/`
+  );
+  accountUrl.searchParams.set("referrer", clientId);
+  accountUrl.searchParams.set("referrer_uri", appUrl);
+  accountUrl.searchParams.set("locale", "ru");
+
+  redirect(accountUrl.toString());
 }

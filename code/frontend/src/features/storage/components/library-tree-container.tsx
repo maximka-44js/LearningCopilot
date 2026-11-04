@@ -15,44 +15,45 @@ import LibraryTreeEntriesTable from "@/features/storage/components/library-tree-
 import LibraryTreePageHeader from "@/features/storage/components/library-tree-page-header";
 import LibraryTreeToolbar from "@/features/storage/components/library-tree-toolbar";
 import UploadFileModal, {
-    type UploadProgressState,
+  type UploadProgressState,
 } from "@/features/storage/components/upload-file-modal";
 import UploadProgressBanner from "@/features/storage/components/upload-progress-banner";
 import {
-    getLibraryTreeQueryKey,
-    useLibraryTree,
+  getLibraryTreeQueryKey,
+  useLibraryTree,
 } from "@/features/storage/lib/library-tree";
 import {
-    deleteFolderById,
+  deleteFolderById,
 } from "@/features/storage/lib/library-tree-operations";
 import {
-    isValidStorageName,
+  isValidStorageName,
 } from "@/features/storage/lib/library-tree-utils";
 import {
-    buildLibraryListItem,
-    buildRootEntries,
-    normalizeFolderData,
-    normalizeLibraryData,
-    normalizeTreeData,
+  buildLibraryListItem,
+  buildRootEntries,
+  normalizeFolderData,
+  normalizeLibraryData,
+  normalizeTreeData,
 } from "@/features/storage/lib/library-tree-view-model";
 import type {
-    FolderTrailItem,
-    RootTreeEntry,
+  FolderTrailItem,
+  RootTreeEntry,
 } from "@/features/storage/lib/library-tree-view-types";
 import { useLibraryTreeClipboard } from "@/features/storage/lib/use-library-tree-clipboard";
 import { useLibraryTreeSelection } from "@/features/storage/lib/use-library-tree-selection";
 import {
-    useDeleteFile,
-    useUpdateFile,
+  useDeleteFile,
+  useUpdateFile,
 } from "@/generated/api/files/files";
 import {
-    getGetFolderContentsQueryKey,
-    useGetFolderById,
-    useGetFolderContents,
-    useUpdateFolder,
+  getGetFolderContentsQueryKey,
+  useGetFolderById,
+  useGetFolderContents,
+  useUpdateFolder,
 } from "@/generated/api/folders/folders";
 import { useGetLibraryById } from "@/generated/api/libraries/libraries";
 import { axiosInstance } from "@/lib/axios";
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
 
 type LibraryTreeContainerProps = {
   libraryId: string;
@@ -275,7 +276,7 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
     }
 
     const confirmed = window.confirm(
-      `Delete ${selectedEntries.length} selected item(s)? This action cannot be undone.`
+      `Удалить выбранные элементы (${selectedEntries.length})? Это действие нельзя отменить.`
     );
     if (!confirmed) {
       return;
@@ -313,24 +314,24 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
 
       if (successCount > 0 && failCount === 0) {
         toast({
-          title: "Delete complete",
-          description: `${successCount} item(s) deleted.`,
+          title: "Удаление завершено",
+          description: `Удалено элементов: ${successCount}.`,
         });
         return;
       }
 
       if (successCount > 0 && failCount > 0) {
         toast({
-          title: "Delete partially complete",
-          description: `${successCount} deleted, ${failCount} failed.`,
+          title: "Удаление завершено частично",
+          description: `Удалено: ${successCount}, не удалось удалить: ${failCount}.`,
           variant: "error",
         });
         return;
       }
 
       toast({
-        title: "Delete failed",
-        description: "Unable to delete selected items right now.",
+        title: "Не удалось удалить",
+        description: "Не удалось удалить выбранные элементы.",
         variant: "error",
       });
     } finally {
@@ -352,7 +353,7 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
     }
 
     const currentName = selectedSingleEntry.name;
-    const nextNameRaw = window.prompt("Rename item", currentName);
+    const nextNameRaw = window.prompt("Переименовать элемент", currentName);
     if (nextNameRaw === null) {
       return;
     }
@@ -360,8 +361,8 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
     const nextName = nextNameRaw.trim();
     if (!nextName) {
       toast({
-        title: "Rename failed",
-        description: "Name is required.",
+        title: "Не удалось переименовать",
+        description: "Введите название.",
         variant: "error",
       });
       return;
@@ -369,9 +370,9 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
 
     if (nextName.length > 100 || !isValidStorageName(nextName)) {
       toast({
-        title: "Rename failed",
+        title: "Не удалось переименовать",
         description:
-          "Invalid name. Use up to 100 characters and avoid \\ / : * ? \" < > |.",
+          `Некорректное название. Используйте до ${ENTITY_TITLE_MAX_LENGTH} символов и не применяйте \\ / : * ? " < > |.`,
         variant: "error",
       });
       return;
@@ -413,13 +414,13 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
         queryClient,
       });
       toast({
-        title: "Renamed",
-        description: `\"${currentName}\" renamed to \"${nextName}\".`,
+        title: "Переименовано",
+        description: `«${currentName}» переименовано в «${nextName}».`,
       });
     } catch {
       toast({
-        title: "Rename failed",
-        description: "Unable to rename selected item right now.",
+        title: "Не удалось переименовать",
+        description: "Не удалось переименовать выбранный элемент.",
         variant: "error",
       });
     } finally {
@@ -436,8 +437,8 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
     setIsDownloadStarting(true);
     console.info("download_clicked", { fileId });
     toast({
-      title: "Download started",
-      description: "Preparing file download...",
+      title: "Загрузка началась",
+      description: "Подготовка файла к скачиванию...",
     });
 
     try {
@@ -448,7 +449,7 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
       const downloadUrl = response.data.URL || response.data.url;
 
       if (!downloadUrl) {
-        throw new Error("Download URL is missing.");
+        throw new Error("Отсутствует URL для скачивания.");
       }
 
       const anchor = document.createElement("a");
@@ -471,32 +472,32 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
 
       if (status === 401) {
         toast({
-          title: "Download failed",
-          description: "Session expired. Please sign in again.",
+          title: "Не удалось скачать файл",
+          description: "Сессия истекла. Войдите снова.",
           variant: "error",
         });
       } else if (status === 403) {
         toast({
-          title: "Download failed",
-          description: "No access to this file.",
+          title: "Не удалось скачать файл",
+          description: "Нет доступа к этому файлу.",
           variant: "error",
         });
       } else if (status === 404) {
         toast({
-          title: "Download failed",
-          description: "File was not found.",
+          title: "Не удалось скачать файл",
+          description: "Файл не найден.",
           variant: "error",
         });
       } else if (status === 400) {
         toast({
-          title: "Download failed",
-          description: "This file is not available because its upload was not completed.",
+          title: "Не удалось скачать файл",
+          description: "Файл недоступен, потому что его загрузка не завершена.",
           variant: "error",
         });
       } else {
         toast({
-          title: "Download failed",
-          description: "Temporary error. Please try again later.",
+          title: "Не удалось скачать файл",
+          description: "Временная ошибка. Попробуйте ещё раз позже.",
           variant: "error",
         });
       }
@@ -573,7 +574,7 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
   ) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading...
+        Загрузка...
       </div>
     );
   }
@@ -587,7 +588,7 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
   ) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-        Unable to load folder information right now.
+        Не удалось загрузить содержимое папки. Попробуйте ещё раз позже.
       </div>
     );
   }
@@ -599,8 +600,8 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
         libraryId={normalizedLibraryId}
         folderLabel={
           isBrowsingFolder
-            ? `Folder: ${currentFolder?.name?.trim() || folderTrail[folderTrail.length - 1]?.name || "Unknown"}`
-            : "Root: Top-level"
+            ? `Папка: ${currentFolder?.name?.trim() || folderTrail[folderTrail.length - 1]?.name || "Неизвестно"}`
+            : "Корень: root"
         }
       />
 
@@ -658,9 +659,9 @@ export default function LibraryTreeContainer({ libraryId }: LibraryTreeContainer
 
           {isRootEmpty ? (
             <div className="rounded-lg border border-dashed border-slate-800 bg-slate-950/40 px-6 py-10 text-center">
-              <p className="text-sm text-slate-300">This library root is empty.</p>
+              <p className="text-sm text-slate-300">Корневая папка библиотеки пуста.</p>
               <p className="mt-2 text-sm text-slate-500">
-                Create your first folder or upload files to start.
+                Создайте первую папку или загрузите файлы, чтобы начать работу.
               </p>
             </div>
           ) : (

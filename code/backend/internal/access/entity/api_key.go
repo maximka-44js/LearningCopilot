@@ -7,6 +7,8 @@ import (
 	d "github.com/maximka-44js/lc/internal/app/domain"
 )
 
+const maxEntityTitleLength = 40
+
 type APIKey struct {
 	ID         string
 	UserID     string
@@ -31,7 +33,7 @@ func (k *APIKey) Validate() error {
 	if strings.TrimSpace(k.Name) == "" {
 		return d.NewValidationError(CodeAPIKeyInvalid, "api key name is required")
 	}
-	if len(strings.TrimSpace(k.Name)) > 120 {
+	if len(strings.TrimSpace(k.Name)) > maxEntityTitleLength {
 		return d.NewValidationError(CodeAPIKeyInvalid, "api key name is too long")
 	}
 	if strings.TrimSpace(k.KeyPrefix) == "" {

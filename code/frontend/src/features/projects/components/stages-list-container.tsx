@@ -9,7 +9,7 @@ export default function StagesListContainer({ projectId }: { projectId: string }
   if (isLoading) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading stages...
+        Загрузка этапов...
       </div>
     );
   }
@@ -23,7 +23,7 @@ export default function StagesListContainer({ projectId }: { projectId: string }
   if (isError || !rawStages) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-        Unable to load stages right now.
+        Не удалось загрузить этапы. Попробуйте ещё раз позже.
       </div>
     );
   }

@@ -126,6 +126,38 @@ func (r *V1) revokeAPIKey(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(mapAPIKey(key))
 }
 
+// @Summary     Delete API key
+// @Description Permanently delete a revoked API key
+// @ID          delete-api-key
+// @Tags        access
+// @Produce     json
+// @Param       id   path     string true "API key ID"
+// @Success     204
+// @Failure     400  {object} d.AppError
+// @Failure     401  {object} d.AppError
+// @Failure     404  {object} d.AppError
+// @Security    BearerAuth
+// @Router      /access/api-keys/{id}/permanent [delete]
+func (r *V1) deleteAPIKey(ctx *fiber.Ctx) error {
+	userID, ok := ctx.Locals("userID").(string)
+	if !ok {
+		return appv1.ErrorResponse(ctx, http.StatusUnauthorized, "unauthorized")
+	}
+
+	err := r.apiKeys.Delete(ctx.UserContext(), usecase.RevokeAPIKeyInput{
+		UserID:   userID,
+		APIKeyID: ctx.Params("id"),
+	})
+	if err != nil {
+		if appErr, ok := err.(*d.AppError); ok {
+			return appv1.ErrorResponse(ctx, appErr.Kind.HTTPCode(), appErr.Message)
+		}
+		return appv1.ErrorResponse(ctx, http.StatusInternalServerError, "internal server error")
+	}
+
+	return ctx.SendStatus(http.StatusNoContent)
+}
+
 // @Summary     Rotate API key
 // @Description Create replacement key and revoke old key after grace window
 // @ID          rotate-api-key

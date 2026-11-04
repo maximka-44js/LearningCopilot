@@ -1,0 +1,1 @@
+export const ENTITY_TITLE_MAX_LENGTH = 40;

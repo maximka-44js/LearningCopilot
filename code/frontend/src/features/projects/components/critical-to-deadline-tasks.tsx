@@ -51,7 +51,7 @@ export default function CriticalToDeadlineTasks({
   if (!normalized.length) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        No critical items returned.
+        Критичные элементы не найдены.
       </div>
     );
   }
@@ -60,7 +60,7 @@ export default function CriticalToDeadlineTasks({
   if (anyLoading) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading critical tasks...
+        Загрузка критичных задач...
       </div>
     );
   }
@@ -69,7 +69,7 @@ export default function CriticalToDeadlineTasks({
   if (anyError) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-        Unable to load critical tasks right now.
+        Не удалось загрузить критичные задачи.
       </div>
     );
   }
@@ -84,7 +84,7 @@ export default function CriticalToDeadlineTasks({
           return (
             <Card key={`${item.taskID ?? "task"}-${index}`}>
               <CardContent className="px-6 py-6 text-sm text-slate-200">
-                Unable to resolve task details for {item.taskID}.
+                Не удалось загрузить данные задачи {item.taskID}.
               </CardContent>
             </Card>
           );
@@ -92,7 +92,7 @@ export default function CriticalToDeadlineTasks({
 
         const descriptionParts = [
           item.reason ? formatReason(item.reason) : null,
-          item.deadlineAt ? `Due ${formatDate(item.deadlineAt)}` : null,
+          item.deadlineAt ? `Дедлайн: ${formatDate(item.deadlineAt)}` : null,
         ].filter(Boolean);
 
         return (

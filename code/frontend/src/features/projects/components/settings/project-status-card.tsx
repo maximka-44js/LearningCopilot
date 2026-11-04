@@ -27,9 +27,9 @@ export default function ProjectStatusCard({
     <Card>
       <CardHeader className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <CardTitle>Project status</CardTitle>
+          <CardTitle>Статус проекта</CardTitle>
           <CardDescription>
-            Current status: {status ?? "unknown"}. Update the lifecycle state.
+            Текущий статус: {status ?? "неизвестен"}. Управляйте состоянием проекта.
           </CardDescription>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -46,7 +46,7 @@ export default function ProjectStatusCard({
                   aria-hidden="true"
                   className="h-4 w-4 opacity-70"
                 />
-                {action === "pause" ? "Pausing" : "Pause"}
+                {action === "pause" ? "Приостановка..." : "Приостановить"}
               </Button>
               <Button
                 variant="outline"
@@ -59,7 +59,7 @@ export default function ProjectStatusCard({
                   aria-hidden="true"
                   className="h-4 w-4 opacity-70"
                 />
-                {action === "archive" ? "Archiving" : "Archive"}
+                {action === "archive" ? "Архивирование..." : "Архивировать"}
               </Button>
             </>
           ) : (
@@ -79,25 +79,25 @@ export default function ProjectStatusCard({
                 className="h-4 w-4 opacity-70"
               />
               {action === "activate"
-                ? "Activating"
+                ? "Активация..."
                 : status === "archived"
-                  ? "Unarchive"
-                  : "Activate"}
+                  ? "Разархивировать"
+                  : "Активировать"}
             </Button>
           )}
         </div>
       </CardHeader>
       <CardContent>
         <div className="rounded-lg border border-slate-800/70 bg-slate-950/40 px-4 py-3 text-sm text-slate-300">
-          Use pause to halt updates without archiving. Archive hides the project
-          from active views but keeps data.
+          Приостановка останавливает обновления без архивации. Архивация скрывает
+          проект из активных списков, но сохраняет данные.
         </div>
         <div className="mt-4 rounded-lg border border-rose-500/40 bg-rose-950/10 px-4 py-4">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-rose-100">Danger zone</p>
+              <p className="text-sm font-semibold text-rose-100">Опасная зона</p>
               <p className="text-sm text-rose-200">
-                Deleting a project removes its policies and history permanently.
+                Удаление проекта навсегда удалит его политики и историю.
               </p>
             </div>
             <Button
@@ -115,7 +115,7 @@ export default function ProjectStatusCard({
                 aria-hidden="true"
                 className="h-4 w-4 opacity-70"
               />
-              {deleting ? "Deleting" : "Delete project"}
+              {deleting ? "Удаление..." : "Удалить проект"}
             </Button>
           </div>
         </div>

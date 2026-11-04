@@ -40,9 +40,9 @@ export default function LibraryTreeEntriesTable({
         <div
           className={`${headerGridClass} border-b border-slate-800/80 bg-slate-900/40 px-4 py-2 text-xs uppercase tracking-[0.15em] text-slate-500`}
         >
-          {useSelectionColumn ? <p>Select</p> : null}
-          <p>Name</p>
-          <p className="text-right">Info</p>
+          {useSelectionColumn ? <p>Выбор</p> : null}
+          <p>Название</p>
+          <p className="text-right">Информация</p>
         </div>
 
         <ul>
@@ -76,7 +76,7 @@ export default function LibraryTreeEntriesTable({
                       onChange={(event) => onToggleEntrySelection(entry.id, event.target.checked)}
                       onClick={(event) => event.stopPropagation()}
                       className="h-4 w-4 rounded border-slate-700 bg-slate-900 opacity-60"
-                      aria-label={`Select ${entry.name}`}
+                      aria-label={`Выбрать ${entry.name}`}
                       disabled={isActionLocked}
                     />
                   </div>
@@ -84,11 +84,11 @@ export default function LibraryTreeEntriesTable({
 
                 <div className="flex min-w-0 items-center gap-3">
                   {entry.kind === "folder" ? (
-                    <Image src="/icons/folder-svgrepo-com.svg" alt="Folder" width={18} height={18} />
+                    <Image src="/icons/folder-svgrepo-com.svg" alt="Папка" width={18} height={18} />
                   ) : (
                     <Image
                       src="/icons/file-svgrepo-com.svg"
-                      alt="File"
+                      alt="Файл"
                       width={18}
                       height={18}
                     />
@@ -98,7 +98,7 @@ export default function LibraryTreeEntriesTable({
                   </p>
                   {isCutPending ? (
                     <span className="rounded border border-amber-400/35 bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-amber-200">
-                      Cut
+                      Вырезано
                     </span>
                   ) : null}
                 </div>
@@ -111,11 +111,11 @@ export default function LibraryTreeEntriesTable({
                     type="button"
                     onClick={() => onOpenEntryInfo(entry)}
                     className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-700/70 bg-slate-900/40 transition hover:bg-slate-800/60"
-                    aria-label={`Open info for ${entry.name}`}
+                    aria-label={`Открыть информацию о ${entry.name}`}
                   >
                     <Image
                       src="/icons/info-circle-svgrepo-com.svg"
-                      alt="Info"
+                      alt="Информация"
                       width={15}
                       height={15}
                     />

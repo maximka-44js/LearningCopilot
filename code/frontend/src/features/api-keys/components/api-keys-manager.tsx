@@ -6,6 +6,8 @@ import { useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { useToast } from "@/components/providers/toast-provider";
+import { getApiErrorMessage } from "@/lib/api-error-message";
+import { ENTITY_TITLE_MAX_LENGTH } from "@/lib/validation-limits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,6 +21,7 @@ import {
 import {
     getListApiKeysQueryKey,
     useCreateApiKey,
+    useDeleteApiKey,
     useListApiKeys,
     useRevokeApiKey,
     useRotateApiKey,
@@ -53,8 +56,11 @@ const createApiKeySchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "Set a key name before creating an API key.")
-    .max(120, "Name must be 120 characters or less."),
+    .min(1, "Введите название ключа.")
+    .max(
+      ENTITY_TITLE_MAX_LENGTH,
+      `Название не должно превышать ${ENTITY_TITLE_MAX_LENGTH} символов.`
+    ),
   expires_at: z
     .string()
     .trim()
@@ -66,18 +72,18 @@ const createApiKeySchema = z.object({
           const parsed = new Date(value);
           return !Number.isNaN(parsed.getTime());
         })(),
-      "Expiration date is invalid."
+      "Укажите корректную дату окончания."
     ),
   scopes: z
     .array(z.string())
-    .min(1, "Scopes must include at least one valid domain:access value.")
+    .min(1, "Выберите хотя бы одну область доступа.")
     .refine(
       (scopes) => scopes.every((scope) => VALID_SCOPE_SET.has(scope)),
-      "Only storage/projects with read/write access are allowed."
+      "Доступны только области storage/projects с правами read/write."
     ),
 });
 
-function formatTimestamp(value?: string, fallback = "Never") {
+function formatTimestamp(value?: string, fallback = "Не использовался") {
   if (!value) {
     return fallback;
   }
@@ -87,7 +93,7 @@ function formatTimestamp(value?: string, fallback = "Never") {
     return fallback;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("ru-RU", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
@@ -153,12 +159,21 @@ function keyState(item: InternalAccessControllerRestapiV1ApiKeyResponse): {
         tone: "border-amber-500/40 bg-amber-500/10 text-amber-200",
       };
     }
+
   }
 
   return {
     label: "active",
     tone: "border-cyan-500/30 bg-cyan-500/10 text-cyan-200",
   };
+}
+
+function formatKeyState(label: "active" | "expired" | "revoked") {
+  return {
+    active: "Активен",
+    expired: "Истёк",
+    revoked: "Отозван",
+  }[label];
 }
 
 function toIsoOrUndefined(value: string): string | undefined {
@@ -174,6 +189,35 @@ function toIsoOrUndefined(value: string): string | undefined {
   return parsed.toISOString();
 }
 
+async function copyTextToClipboard(value: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch {
+      // Fall back to the legacy API used by browsers without clipboard permission.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  textarea.style.pointerEvents = "none";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+
+  try {
+    if (!document.execCommand("copy")) {
+      throw new Error("Clipboard copy command was rejected");
+    }
+  } finally {
+    textarea.remove();
+  }
+}
+
 export default function ApiKeysManager() {
   const [name, setName] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
@@ -187,6 +231,7 @@ export default function ApiKeysManager() {
 
   const listQuery = useListApiKeys();
   const { mutateAsync: createApiKey } = useCreateApiKey();
+  const { mutateAsync: deleteApiKey, isPending: isDeleting } = useDeleteApiKey();
   const { mutateAsync: revokeApiKey, isPending: isRevoking } = useRevokeApiKey();
   const { mutateAsync: rotateApiKey, isPending: isRotating } = useRotateApiKey();
 
@@ -223,15 +268,15 @@ export default function ApiKeysManager() {
     }
 
     try {
-      await navigator.clipboard.writeText(issuedSecret.secret);
+      await copyTextToClipboard(issuedSecret.secret);
       toast({
-        title: "Secret copied",
-        description: "The new key secret is copied to clipboard.",
+        title: "Секрет скопирован",
+        description: "Секрет нового ключа скопирован в буфер обмена.",
       });
     } catch {
       toast({
-        title: "Copy failed",
-        description: "Please copy the secret manually.",
+        title: "Не удалось скопировать",
+        description: "Скопируйте секрет вручную.",
         variant: "error",
       });
     }
@@ -262,9 +307,9 @@ export default function ApiKeysManager() {
     });
 
     if (!parsed.success) {
-      const message = parsed.error.issues[0]?.message ?? "Check form values.";
+      const message = parsed.error.issues[0]?.message ?? "Проверьте значения в форме.";
       toast({
-        title: "Check form values",
+        title: "Проверьте форму",
         description: message,
         variant: "error",
       });
@@ -296,8 +341,8 @@ export default function ApiKeysManager() {
 
       if (!isCreated) {
         toast({
-          title: "Key was not created",
-          description: "Server rejected the create request.",
+          title: "Ключ не создан",
+          description: "Сервер отклонил запрос.",
           variant: "error",
         });
         return;
@@ -321,15 +366,15 @@ export default function ApiKeysManager() {
       wasCreated = true;
 
       toast({
-        title: "API key created",
+        title: "API-ключ создан",
         description: secret
-          ? "Store the secret now: it may not be visible again."
-          : "Key created, but no secret was returned by API.",
+          ? "Сохраните секрет сейчас: повторно он может быть недоступен."
+          : "Ключ создан, но сервер не вернул секрет.",
       });
-    } catch {
+    } catch (error) {
       toast({
-        title: "Key creation failed",
-        description: "Something went wrong while creating API key.",
+        title: "Ключ не создан",
+        description: getApiErrorMessage(error),
         variant: "error",
       });
     } finally {
@@ -346,7 +391,7 @@ export default function ApiKeysManager() {
     }
 
     const shouldProceed = window.confirm(
-      `Revoke key \"${item.name ?? item.prefix ?? item.id}\" immediately?`
+      `Отозвать ключ «${item.name ?? item.prefix ?? item.id}»?`
     );
     if (!shouldProceed) {
       return;
@@ -361,8 +406,8 @@ export default function ApiKeysManager() {
 
       if (!isRevoked) {
         toast({
-          title: "Revoke failed",
-          description: "Server did not accept revoke request.",
+          title: "Не удалось отозвать ключ",
+          description: "Сервер не принял запрос на отзыв ключа.",
           variant: "error",
         });
         return;
@@ -370,13 +415,13 @@ export default function ApiKeysManager() {
 
       await queryClient.invalidateQueries({ queryKey: getListApiKeysQueryKey() });
       toast({
-        title: "Key revoked",
-        description: "The API key is now inactive.",
+        title: "Ключ отозван",
+        description: "API-ключ деактивирован.",
       });
-    } catch {
+    } catch (error) {
       toast({
-        title: "Revoke failed",
-        description: "Something went wrong while revoking key.",
+        title: "Ключ не отозван",
+        description: getApiErrorMessage(error),
         variant: "error",
       });
     }
@@ -388,7 +433,7 @@ export default function ApiKeysManager() {
     }
 
     const suggestedName = item.name ?? "";
-    const promptValue = window.prompt("Optional new key name for rotated key:", suggestedName);
+    const promptValue = window.prompt("Новое название ключа (необязательно):", suggestedName);
     if (promptValue === null) {
       return;
     }
@@ -411,8 +456,8 @@ export default function ApiKeysManager() {
 
       if (!isRotated) {
         toast({
-          title: "Rotate failed",
-          description: "Server did not accept rotate request.",
+          title: "Не удалось обновить ключ",
+          description: "Сервер не принял запрос на обновление ключа.",
           variant: "error",
         });
         return;
@@ -432,15 +477,43 @@ export default function ApiKeysManager() {
       await queryClient.invalidateQueries({ queryKey: getListApiKeysQueryKey() });
 
       toast({
-        title: "Key rotated",
+        title: "Ключ обновлён",
         description: secret
-          ? "New secret is available now. Save it before leaving the page."
-          : "Key rotated successfully.",
+          ? "Новый секрет доступен. Сохраните его до ухода со страницы."
+          : "Ключ успешно обновлён.",
       });
-    } catch {
+    } catch (error) {
       toast({
-        title: "Rotate failed",
-        description: "Something went wrong while rotating key.",
+        title: "Ключ не обновлён",
+        description: getApiErrorMessage(error),
+        variant: "error",
+      });
+    }
+  };
+
+  const handleDelete = async (item: InternalAccessControllerRestapiV1ApiKeyResponse) => {
+    if (!item.id || !item.revoked_at) {
+      return;
+    }
+
+    const shouldProceed = window.confirm(
+      `Удалить отозванный ключ «${item.name ?? item.prefix ?? item.id}» без возможности восстановления?`
+    );
+    if (!shouldProceed) {
+      return;
+    }
+
+    try {
+      await deleteApiKey({ id: item.id });
+      await queryClient.invalidateQueries({ queryKey: getListApiKeysQueryKey() });
+      toast({
+        title: "Ключ удалён",
+        description: "Отозванный API-ключ удалён окончательно.",
+      });
+    } catch (error) {
+      toast({
+        title: "Ключ не удалён",
+        description: getApiErrorMessage(error),
         variant: "error",
       });
     }
@@ -449,7 +522,7 @@ export default function ApiKeysManager() {
   if (listQuery.isLoading) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading API keys...
+        Загрузка API-ключей...
       </div>
     );
   }
@@ -457,7 +530,7 @@ export default function ApiKeysManager() {
   if (listQuery.isError) {
     return (
       <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-6 py-12 text-center text-sm text-rose-100">
-        Unable to load API keys right now.
+        Не удалось загрузить API-ключи.
       </div>
     );
   }
@@ -466,9 +539,10 @@ export default function ApiKeysManager() {
     <section className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Create API key</CardTitle>
+          <CardTitle>Создать API-ключ</CardTitle>
           <CardDescription>
-            Scopes must use the format <code>domain:access</code>. Valid domains: storage,
+            Области доступа задаются в формате <code>domain:access</code>.
+            Доступные домены: storage,
             projects.
           </CardDescription>
         </CardHeader>
@@ -476,22 +550,22 @@ export default function ApiKeysManager() {
           <form onSubmit={handleCreate} className="grid gap-5">
             <div className="grid gap-2">
               <label htmlFor="api-key-name" className="text-sm text-slate-300">
-                Name
+                Название
               </label>
               <input
                 id="api-key-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                maxLength={120}
+                maxLength={ENTITY_TITLE_MAX_LENGTH}
                 required
-                placeholder="Frontend generated key"
+                placeholder="Например, ключ для frontend"
                 className="h-10 rounded-md border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100"
               />
             </div>
 
             <div className="grid gap-2">
               <label htmlFor="api-key-expires" className="text-sm text-slate-300">
-                Expires at (optional)
+                Действует до (необязательно)
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -507,12 +581,12 @@ export default function ApiKeysManager() {
                   variant="outline"
                   size="icon"
                   onClick={openExpiresDatePicker}
-                  aria-label="Open calendar"
+                  aria-label="Открыть календарь"
                 >
                   <CalendarIcon className="size-4" />
                 </Button>
               </div>
-              <p className="text-xs text-slate-500">Leave empty for a non-expiring key.</p>
+              <p className="text-xs text-slate-500">Оставьте пустым для ключа без срока действия.</p>
             </div>
 
             <div className="grid gap-3">
@@ -525,19 +599,19 @@ export default function ApiKeysManager() {
                     size="sm"
                     onClick={() => setPreset(preset.id)}
                   >
-                    {preset.label}
+                    {preset.id === "full" ? "Все области" : "Проекты: только чтение"}
                   </Button>
                 ))}
               </div>
 
               <div className="rounded-lg border border-slate-800/70 bg-slate-900/40 p-3 text-xs text-slate-400">
                 <p>
-                  <span className="font-medium text-slate-200">read</span> is required for methods:
+                  <span className="font-medium text-slate-200">read</span> нужен для методов:
                   {" "}
                   {API_KEY_SCOPE_RULES.readMethods}
                 </p>
                 <p>
-                  <span className="font-medium text-slate-200">write</span> is required for methods:
+                  <span className="font-medium text-slate-200">write</span> нужен для методов:
                   {" "}
                   {API_KEY_SCOPE_RULES.writeMethods}
                 </p>
@@ -567,7 +641,7 @@ export default function ApiKeysManager() {
 
             <div className="flex items-center justify-end">
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create key"}
+                {isSubmitting ? "Создание..." : "Создать ключ"}
               </Button>
             </div>
           </form>
@@ -576,13 +650,13 @@ export default function ApiKeysManager() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Existing keys</CardTitle>
-          <CardDescription>Revoke compromised keys or rotate secrets with optional rename.</CardDescription>
+          <CardTitle>Существующие ключи</CardTitle>
+          <CardDescription>Отзывайте скомпрометированные ключи или обновляйте их секреты.</CardDescription>
         </CardHeader>
         <CardContent>
           {keys.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-6 py-10 text-center text-sm text-slate-400">
-              No API keys created yet.
+              API-ключей пока нет.
             </div>
           ) : (
             <div className="grid gap-3">
@@ -599,15 +673,15 @@ export default function ApiKeysManager() {
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="text-sm font-medium text-slate-100">
-                            {item.name || item.prefix || "Unnamed key"}
+                            {item.name || item.prefix || "Ключ без названия"}
                           </p>
                           <span
                             className={`rounded-full border px-2 py-0.5 text-[0.7rem] uppercase tracking-[0.16em] ${state.tone}`}
                           >
-                            {state.label}
+                            {formatKeyState(state.label)}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400">Prefix: {item.prefix || "unknown"}</p>
+                        <p className="text-xs text-slate-400">Префикс: {item.prefix || "нет данных"}</p>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
@@ -618,7 +692,7 @@ export default function ApiKeysManager() {
                           onClick={() => void handleRotate(item)}
                           disabled={isRotating || isRevoked}
                         >
-                          Rotate
+                          Обновить
                         </Button>
                         <Button
                           type="button"
@@ -627,15 +701,31 @@ export default function ApiKeysManager() {
                           onClick={() => void handleRevoke(item)}
                           disabled={isRevoking || isRevoked}
                         >
-                          Revoke
+                          Отозвать
                         </Button>
+                        {isRevoked ? (
+                          <button
+                            type="button"
+                            aria-label="Удалить отозванный API-ключ"
+                            title="Удалить отозванный ключ"
+                            onClick={() => void handleDelete(item)}
+                            disabled={isDeleting}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-rose-500/40 bg-rose-500/10 p-2 text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <img
+                              src="/icons/delete-2-svgrepo-com.svg"
+                              alt=""
+                              className="h-4 w-4"
+                            />
+                          </button>
+                        ) : null}
                       </div>
                     </div>
 
                     <div className="mt-3 grid gap-3 text-xs text-slate-400 md:grid-cols-3">
-                      <p>Created: {formatTimestamp(item.created_at, "Unknown")}</p>
-                      <p>Last used: {formatTimestamp(item.last_used_at)}</p>
-                      <p>Expires: {formatTimestamp(item.expires_at)}</p>
+                      <p>Создан: {formatTimestamp(item.created_at, "Нет данных")}</p>
+                      <p>Последнее использование: {formatTimestamp(item.last_used_at)}</p>
+                      <p>Действует до: {formatTimestamp(item.expires_at, "Без срока")}</p>
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -659,10 +749,10 @@ export default function ApiKeysManager() {
       <Dialog open={Boolean(issuedSecret)} onOpenChange={(open) => (!open ? setIssuedSecret(null) : null)}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Save secret now</DialogTitle>
+            <DialogTitle>Сохраните секрет</DialogTitle>
             <DialogDescription>
               {issuedSecret
-                ? `Key ${issuedSecret.action === "created" ? "created" : "rotated"} for ${issuedSecret.keyName}. Secret may be shown only once.`
+                ? `Ключ «${issuedSecret.keyName}» ${issuedSecret.action === "created" ? "создан" : "обновлён"}. Секрет может быть показан только один раз.`
                 : ""}
             </DialogDescription>
           </DialogHeader>
@@ -675,10 +765,10 @@ export default function ApiKeysManager() {
 
           <DialogFooter className="bg-transparent p-0 sm:justify-end">
             <Button type="button" variant="outline" onClick={copySecret}>
-              Copy secret
+              Скопировать секрет
             </Button>
             <Button type="button" onClick={() => setIssuedSecret(null)}>
-              Close
+              Закрыть
             </Button>
           </DialogFooter>
         </DialogContent>

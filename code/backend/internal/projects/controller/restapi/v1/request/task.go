@@ -27,7 +27,7 @@ type TaskCompetencyBlock struct {
 
 // AddTask -.
 type AddTask struct {
-	Outcome    string                 `json:"outcome" validate:"required,max=2000" example:"Explain immune response mechanisms and solve case questions"`
+	Outcome    string                 `json:"outcome" validate:"required,max=40" example:"Explain immune response mechanisms and solve case questions"`
 	Difficulty int                    `json:"difficulty" validate:"required,min=1,max=10" example:"6"`
 	Priority   entity.ProjectPriority `json:"priority" validate:"required,oneof=low normal high" example:"normal"`
 	Policy     *entity.TaskPolicy     `json:"policy,omitempty"`
@@ -37,7 +37,7 @@ type AddTask struct {
 
 // UpdateTask -.
 type UpdateTask struct {
-	Outcome    string                 `json:"outcome" validate:"required,max=2000" example:"Explain immune response mechanisms using mixed exam formats"`
+	Outcome    string                 `json:"outcome" validate:"required,max=40" example:"Explain immune response mechanisms using mixed exam formats"`
 	Difficulty int                    `json:"difficulty" validate:"required,min=1,max=10" example:"7"`
 	Priority   entity.ProjectPriority `json:"priority" validate:"required,oneof=low normal high" example:"high"`
 	DeadlineAt *time.Time             `json:"deadline_at,omitempty" example:"2026-11-01T23:59:59Z"`
@@ -66,7 +66,7 @@ type RecordAssessmentSnapshot struct {
 	RecordedAt          *time.Time                 `json:"recorded_at,omitempty" example:"2026-06-12T12:00:00Z"`
 	TraceID             string                     `json:"trace_id,omitempty" validate:"max=128" example:"trace-9f2a"`
 	SourceReference     string                     `json:"source_reference,omitempty" validate:"max=1024" example:"dialog:session-13"`
-	SourceReferenceType string                     `json:"source_reference_type,omitempty" validate:"max=64" example:"manual_review"`
+	SourceReferenceType string                     `json:"source_reference_type,omitempty" validate:"max=64" example:"chat_session"`
 } // @name v1.RecordAssessmentSnapshot
 
 // RecalculateTaskReadiness -.

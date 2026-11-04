@@ -124,8 +124,8 @@ export default function StageBoardContainer({
     },
     onError: () => {
       toast({
-        title: "Stage update failed",
-        description: "Unable to update the stage status right now.",
+        title: "Не удалось обновить этап",
+        description: "Сейчас не удалось изменить статус этапа.",
         variant: "error",
       });
     },
@@ -151,8 +151,8 @@ export default function StageBoardContainer({
         method: "DELETE",
       });
       toast({
-        title: "Stage deleted",
-        description: "The stage was removed.",
+        title: "Этап удалён",
+        description: "Этап удалён.",
       });
       setDeleteOpen(false);
       queryClient.invalidateQueries({
@@ -161,8 +161,8 @@ export default function StageBoardContainer({
       router.push(`/projects/${projectId}/stages`);
     } catch {
       toast({
-        title: "Stage not deleted",
-        description: "Unable to delete the stage right now.",
+        title: "Этап не удалён",
+        description: "Сейчас не удалось удалить этап.",
         variant: "error",
       });
     } finally {
@@ -227,7 +227,7 @@ export default function StageBoardContainer({
   if (isLoading) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading stage board...
+        Загрузка панели этапа...
       </div>
     );
   }
@@ -236,10 +236,10 @@ export default function StageBoardContainer({
     const status = getOrvalStatus(data);
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-        Unable to load the stage board right now.
+        Не удалось загрузить панель этапа.
         {status ? (
           <span className="mt-2 block text-xs text-slate-400">
-            API returned status {status}.
+            API вернул статус {status}.
           </span>
         ) : null}
       </div>
@@ -252,14 +252,14 @@ export default function StageBoardContainer({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-              Stage
+              Этап
             </p>
             <h1 className="text-3xl font-semibold">
-              {stage?.name || "Stage board"}
+              {stage?.name || "Панель этапа"}
             </h1>
             <p className="max-w-2xl text-sm text-slate-400">
               {stage?.goal?.trim() ||
-                "Task readiness, deficits, and next actions for this stage."}
+                "Готовность задач, дефициты и следующие действия по этапу."}
             </p>
           </div>
 
@@ -277,7 +277,7 @@ export default function StageBoardContainer({
                     aria-hidden="true"
                     className="mr-2 h-4.5 w-4.5 opacity-70"
                   />
-                  {stageAction === "pause" ? "Pausing..." : "Pause"}
+                  {stageAction === "pause" ? "Приостановка..." : "Приостановить"}
                 </Button>
                 <Button
                   variant="outline"
@@ -290,7 +290,7 @@ export default function StageBoardContainer({
                     aria-hidden="true"
                     className="mr-2 h-4.5 w-4.5 opacity-70"
                   />
-                  {stageAction === "archive" ? "Archiving..." : "Archive"}
+                  {stageAction === "archive" ? "Архивирование..." : "Архивировать"}
                 </Button>
               </>
             ) : (
@@ -310,10 +310,10 @@ export default function StageBoardContainer({
                   className="mr-2 h-4.5 w-4.5 opacity-70"
                 />
                 {stageAction === "activate"
-                  ? "Activating..."
+                  ? "Активация..."
                   : stageStatus === "archived"
-                    ? "Unarchive"
-                    : "Activate"}
+                    ? "Разархивировать"
+                    : "Активировать"}
               </Button>
             )}
           </div>
@@ -321,24 +321,24 @@ export default function StageBoardContainer({
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
-            label="Readiness"
+            label="Готовность"
             value={formatPercent(stage?.readiness)}
             tone={metricTone(stage?.readiness)}
             progress={stage?.readiness}
           />
           <Metric
-            label="Coverage"
+            label="Охват"
             value={formatPercent(stage?.coverage)}
             tone={metricTone(stage?.coverage)}
             progress={stage?.coverage}
           />
           <Metric
-            label="Stage risk"
+            label="Риск этапа"
             value={formatLabel(stage?.risk)}
             tone={riskTone(stage?.risk)}
           />
           <Metric
-            label="Deadline"
+            label="Дедлайн"
             value={formatDate(stage?.deadline_at)}
             tone="slate"
           />
@@ -355,9 +355,9 @@ export default function StageBoardContainer({
                 className="flex flex-1 items-start justify-between gap-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
               >
                 <div className="space-y-1">
-                  <CardTitle>Stage details</CardTitle>
+                  <CardTitle>Данные этапа</CardTitle>
                   <CardDescription>
-                    Status, risk, and key dates returned by the stage board.
+                    Статус, риск и основные даты этапа.
                   </CardDescription>
                 </div>
                 <span className="text-lg font-semibold text-slate-300 lg:hidden">
@@ -370,7 +370,7 @@ export default function StageBoardContainer({
                   size="sm"
                   onClick={() => setEditOpen(true)}
                   disabled={!stage}
-                  aria-label="Edit stage"
+                  aria-label="Изменить этап"
                 >
                   <img
                     src="/icons/edit-svgrepo-com.svg"
@@ -384,7 +384,7 @@ export default function StageBoardContainer({
                   onClick={() => setDeleteOpen(true)}
                   size="sm"
                   disabled={!stage || deletePending}
-                  aria-label="Delete stage"
+                  aria-label="Удалить этап"
                 >
                   <img
                     src="/icons/delete-2-svgrepo-com.svg"
@@ -403,18 +403,18 @@ export default function StageBoardContainer({
             )}
           >
             <dl className="space-y-3">
-              <ValueRow label="Status" value={formatLabel(stage?.status)} />
-              <ValueRow label="Risk" value={formatLabel(stage?.risk)} />
+              <ValueRow label="Статус" value={formatLabel(stage?.status)} />
+              <ValueRow label="Риск" value={formatLabel(stage?.risk)} />
               <ValueRow
-                label="Order"
+                label="Порядок"
                 value={
-                  typeof stage?.order === "number" ? `${stage.order}` : "N/A"
+                  typeof stage?.order === "number" ? `${stage.order}` : "Нет данных"
                 }
               />
-              <ValueRow label="Deadline" value={formatDate(stage?.deadline_at)} />
-              <ValueRow label="Created" value={formatDate(stage?.created_at)} />
-              <ValueRow label="Updated" value={formatDate(stage?.updated_at)} />
-              <ValueRow label="Archived" value={formatDate(stage?.archived_at)} />
+              <ValueRow label="Дедлайн" value={formatDate(stage?.deadline_at)} />
+              <ValueRow label="Создан" value={formatDate(stage?.created_at)} />
+              <ValueRow label="Изменён" value={formatDate(stage?.updated_at)} />
+              <ValueRow label="Архивирован" value={formatDate(stage?.archived_at)} />
             </dl>
 
             {stage ? (
@@ -431,7 +431,7 @@ export default function StageBoardContainer({
                       statusDotClass(stage.status)
                     )}
                   />
-                  Status: {formatLabel(stage.status)}
+                  Статус: {formatLabel(stage.status)}
                 </span>
                 <span
                   className={cn(
@@ -439,7 +439,7 @@ export default function StageBoardContainer({
                     badgeTone(stage.risk)
                   )}
                 >
-                  Risk: {formatLabel(stage.risk)}
+                  Риск: {formatLabel(stage.risk)}
                 </span>
               </div>
             ) : null}
@@ -454,9 +454,9 @@ export default function StageBoardContainer({
               className="flex w-full items-center justify-between gap-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
             >
               <div className="space-y-1">
-                <CardTitle>Signals</CardTitle>
+                <CardTitle>Сигналы</CardTitle>
                 <CardDescription>
-                  Aggregated deficits and next-action priorities for stage tasks.
+                  Сводка дефицитов и приоритетов следующих действий по задачам этапа.
                 </CardDescription>
               </div>
               <span className="text-lg font-semibold text-slate-300 lg:hidden">
@@ -472,16 +472,16 @@ export default function StageBoardContainer({
           >
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-wide text-slate-500">
-                Block deficits
+                Дефициты контекстов
               </p>
               {anyTaskLoading ? (
-                <p className="text-sm text-slate-400">Loading task signals...</p>
+                <p className="text-sm text-slate-400">Загрузка сигналов задач...</p>
               ) : anyTaskError ? (
                 <p className="text-sm text-rose-200">
-                  Unable to load task signals right now.
+                  Не удалось загрузить сигналы задач.
                 </p>
               ) : Object.keys(deficitCounts).length === 0 ? (
-                <p className="text-sm text-slate-400">No deficits reported yet.</p>
+                <p className="text-sm text-slate-400">Дефициты пока не выявлены.</p>
               ) : (
                 <div className="overflow-hidden">
                   <Swiper
@@ -506,14 +506,14 @@ export default function StageBoardContainer({
                       <SwiperSlide key={taskId} className="w-full!">
                         <div className="h-full rounded-lg border border-slate-800/70 bg-slate-950/40 p-3">
                           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                            Task
+                            Задача
                           </p>
                           <Link
                             href={`/projects/${projectId}/stages/${stageId}/tasks/${taskId}`}
                             className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-slate-100 transition hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
                           >
                             <span className="truncate">
-                              {task?.outcome?.trim() || "Task"}
+                              {task?.outcome?.trim() || "Задача"}
                             </span>
                             <img
                               src="/icons/external-link.svg"
@@ -525,7 +525,7 @@ export default function StageBoardContainer({
                           <div className="mt-3 flex flex-wrap gap-2">
                             {deficits.length === 0 ? (
                               <span className="rounded-md border border-slate-800/70 bg-slate-950/40 px-2 py-1 text-xs text-slate-200">
-                                No deficits
+                                Дефицитов нет
                               </span>
                             ) : (
                               deficitLabels.map((label, labelIndex) => (
@@ -565,17 +565,17 @@ export default function StageBoardContainer({
 
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-wide text-slate-500">
-                Next action priorities
+                Приоритеты следующих действий
               </p>
               {anyTaskLoading ? (
-                <p className="text-sm text-slate-400">Loading task signals...</p>
+                <p className="text-sm text-slate-400">Загрузка сигналов задач...</p>
               ) : anyTaskError ? (
                 <p className="text-sm text-rose-200">
-                  Unable to load task signals right now.
+                  Не удалось загрузить сигналы задач.
                 </p>
               ) : Object.keys(priorityCounts).length === 0 ? (
                 <p className="text-sm text-slate-400">
-                  No next-action priorities yet.
+                  Приоритетов следующих действий пока нет.
                 </p>
               ) : (
                 <div className="overflow-hidden">
@@ -592,14 +592,14 @@ export default function StageBoardContainer({
                       <SwiperSlide key={`${taskId}-priority`} className="w-full!">
                         <div className="h-full rounded-lg border border-slate-800/70 bg-slate-950/40 p-3">
                           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                            Task
+                            Задача
                           </p>
                           <Link
                             href={`/projects/${projectId}/stages/${stageId}/tasks/${taskId}`}
                             className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-slate-100 transition hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
                           >
                             <span className="truncate">
-                              {task?.outcome?.trim() || "Task"}
+                              {task?.outcome?.trim() || "Задача"}
                             </span>
                             <img
                               src="/icons/external-link.svg"
@@ -610,7 +610,7 @@ export default function StageBoardContainer({
                           </Link>
                           <div className="mt-3 flex flex-wrap gap-2">
                             <span className="rounded-md border border-slate-800/70 bg-slate-950/40 px-2 py-1 text-xs text-slate-200">
-                              Priority: {priority}
+                              Приоритет: {priority}
                             </span>
                             <span
                               className={cn(
@@ -618,24 +618,24 @@ export default function StageBoardContainer({
                                 badgeTone(task?.risk)
                               )}
                             >
-                              Risk: {formatLabel(task?.risk)}
+                              Риск: {formatLabel(task?.risk)}
                             </span>
                           </div>
                           <div className="mt-4 grid gap-2 text-xs text-slate-300">
                             <div className="flex items-center justify-between">
-                              <span>Readiness</span>
+                              <span>Готовность</span>
                               <span className="text-slate-400">
                                 {formatPercent(task?.readiness)}
                               </span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span>Coverage</span>
+                              <span>Охват</span>
                               <span className="text-slate-400">
                                 {formatPercent(task?.coverage)}
                               </span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span>Deadline</span>
+                              <span>Дедлайн</span>
                               <span className="text-slate-400">
                                 {formatDate(task?.deadline_at)}
                               </span>
@@ -656,13 +656,13 @@ export default function StageBoardContainer({
       <section className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
-            <h2 className="text-xl font-semibold text-slate-100">Tasks</h2>
+            <h2 className="text-xl font-semibold text-slate-100">Задачи</h2>
             <p className="text-sm text-slate-400">
-              Task readiness and guidance for the selected stage.
+              Готовность и рекомендации по задачам выбранного этапа.
             </p>
           </div>
           <Button variant="outline" onClick={() => setCreateOpen(true)}>
-            New task
+            Новая задача
           </Button>
         </div>
 
@@ -670,20 +670,20 @@ export default function StageBoardContainer({
           <div className="flex flex-1 flex-col gap-3 lg:flex-row lg:items-center">
             <div className="flex-1">
               <label className="sr-only" htmlFor="task-search">
-                Search tasks
+                Поиск задач
               </label>
               <input
                 id="task-search"
                 value={taskSearch}
                 onChange={(e) => setTaskSearch(e.target.value)}
-                placeholder="Search tasks by outcome"
+                placeholder="Поиск задач по результату"
                 className="h-10 w-full rounded-md border border-slate-800/70 bg-slate-950/60 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
               />
             </div>
 
             <div className="flex flex-wrap gap-2">
               <label className="sr-only" htmlFor="task-status">
-                Filter by status
+                Фильтр по статусу
               </label>
               <select
                 id="task-status"
@@ -691,18 +691,18 @@ export default function StageBoardContainer({
                 onChange={(e) => setTaskStatusFilter(e.target.value as TaskStatusFilter)}
                 className="h-10 rounded-md border border-slate-800/70 bg-slate-950/60 px-3 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
               >
-                <option value="all">All statuses</option>
-                <option value="backlog">Backlog</option>
-                <option value="learning">Learning</option>
-                <option value="baseline_passed">Baseline passed</option>
-                <option value="at_risk">At risk</option>
-                <option value="stable">Stable</option>
-                <option value="exam_ready">Exam ready</option>
-                <option value="archived">Archived</option>
+                <option value="all">Все статусы</option>
+                <option value="backlog">В очереди</option>
+                <option value="learning">Изучение</option>
+                <option value="baseline_passed">Базовый уровень пройден</option>
+                <option value="at_risk">В зоне риска</option>
+                <option value="stable">Стабильная</option>
+                <option value="exam_ready">Готова к экзамену</option>
+                <option value="archived">Архивные</option>
               </select>
 
               <label className="sr-only" htmlFor="task-risk">
-                Filter by risk
+                Фильтр по риску
               </label>
               <select
                 id="task-risk"
@@ -710,15 +710,15 @@ export default function StageBoardContainer({
                 onChange={(e) => setTaskRiskFilter(e.target.value as TaskRiskFilter)}
                 className="h-10 rounded-md border border-slate-800/70 bg-slate-950/60 px-3 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
               >
-                <option value="all">All risks</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
+                <option value="all">Все уровни риска</option>
+                <option value="low">Низкий</option>
+                <option value="medium">Средний</option>
+                <option value="high">Высокий</option>
+                <option value="critical">Критический</option>
               </select>
 
               <label className="sr-only" htmlFor="task-priority">
-                Filter by priority
+                Фильтр по приоритету
               </label>
               <select
                 id="task-priority"
@@ -726,10 +726,10 @@ export default function StageBoardContainer({
                 onChange={(e) => setTaskPriorityFilter(e.target.value as TaskPriorityFilter)}
                 className="h-10 rounded-md border border-slate-800/70 bg-slate-950/60 px-3 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
               >
-                <option value="all">All priorities</option>
-                <option value="low">Low</option>
-                <option value="normal">Normal</option>
-                <option value="high">High</option>
+                <option value="all">Все приоритеты</option>
+                <option value="low">Низкий</option>
+                <option value="normal">Обычный</option>
+                <option value="high">Высокий</option>
               </select>
             </div>
           </div>
@@ -761,11 +761,11 @@ export default function StageBoardContainer({
         <div className="space-y-5 sm:space-y-4">
           {tasks.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-6 py-10 text-center text-sm text-slate-400">
-              No tasks in this stage yet.
+              В этом этапе пока нет задач.
             </div>
           ) : filteredTasks.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-6 py-10 text-center text-sm text-slate-400">
-              No tasks match the current filters.
+              По выбранным фильтрам задачи не найдены.
             </div>
           ) : (
             filteredTasks.map((task, index) => {
@@ -785,9 +785,9 @@ export default function StageBoardContainer({
                       return `${formatLabel(value)} ${mastery}`;
                     })
                     .join(", ")
-                : "None";
+                : "Нет";
               const priorityLabel = formatLabel(nextActionPriority[taskId]);
-              const description = `Deficits: ${deficitLabel} · Next action priority: ${priorityLabel}`;
+              const description = `Дефициты: ${deficitLabel} · Приоритет действия: ${priorityLabel}`;
 
               return (
                 <TaskCard

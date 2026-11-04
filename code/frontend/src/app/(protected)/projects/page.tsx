@@ -9,11 +9,11 @@ export default async function ProjectsPage() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
         <header className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-            Projects BC
+            Проекты
           </p>
-          <h1 className="text-3xl font-semibold">Projects</h1>
+          <h1 className="text-3xl font-semibold">Проекты</h1>
           <p className="max-w-2xl text-sm text-slate-400">
-            Track readiness, coverage, and risk across your active plans.
+            Отслеживайте готовность, охват и риски по текущим планам.
           </p>
         </header>
 

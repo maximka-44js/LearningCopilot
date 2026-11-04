@@ -54,7 +54,7 @@ const ValueRow = ({ label, value }: { label: string; value: string }) => {
 const blockOrder = ["comprehension", "memorization", "practice"] as const;
 
 const formatFractionPercent = (value?: number) => {
-  if (value === null || value === undefined) return "N/A";
+  if (value === null || value === undefined) return "Нет данных";
   if (value > 1) return formatPercent(value);
   return `${Math.round(value * 100)}%`;
 };
@@ -137,8 +137,8 @@ export default function TaskReadinessContainer({
       },
       onError: () => {
         toast({
-          title: "Status not updated",
-          description: "Unable to update the task status right now.",
+          title: "Статус не обновлён",
+          description: "Сейчас не удалось изменить статус задачи.",
           variant: "error",
         });
       },
@@ -157,8 +157,8 @@ export default function TaskReadinessContainer({
         },
       });
       toast({
-        title: "Status updated",
-        description: `Task status set to ${formatLabel(nextStatus)}.`,
+        title: "Статус обновлён",
+        description: `Статус задачи: ${formatLabel(nextStatus)}.`,
       });
     } catch {
       return;
@@ -168,7 +168,7 @@ export default function TaskReadinessContainer({
   if (readinessQuery.isLoading || taskQuery.isLoading) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-slate-400">
-        Loading task readiness...
+        Загрузка готовности задачи...
       </div>
     );
   }
@@ -177,10 +177,10 @@ export default function TaskReadinessContainer({
     const status = getOrvalStatus(readinessQuery.data);
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-6 py-12 text-center text-sm text-rose-200">
-        Unable to load the task readiness right now.
+        Сейчас не удалось загрузить готовность задачи.
         {status ? (
           <span className="mt-2 block text-xs text-slate-400">
-            API returned status {status}.
+            Код ответа API: {status}.
           </span>
         ) : null}
       </div>
@@ -208,8 +208,8 @@ export default function TaskReadinessContainer({
         }
       );
       toast({
-        title: "Task deleted",
-        description: "The task was removed.",
+        title: "Задача удалена",
+        description: "Задача удалена.",
       });
       setDeleteOpen(false);
       queryClient.invalidateQueries({
@@ -224,8 +224,8 @@ export default function TaskReadinessContainer({
       router.push(`/projects/${projectId}/stages/${stageId}`);
     } catch {
       toast({
-        title: "Task not deleted",
-        description: "Unable to delete the task right now.",
+        title: "Задача не удалена",
+        description: "Сейчас не удалось удалить задачу.",
         variant: "error",
       });
     } finally {
@@ -242,10 +242,10 @@ export default function TaskReadinessContainer({
               Task
             </p>
             <h1 className="text-3xl font-semibold">
-              {task?.outcome?.trim() || "Task readiness"}
+              {task?.outcome?.trim() || "Готовность задачи"}
             </h1>
             <p className="max-w-2xl text-sm text-slate-400">
-              Readiness, block health, and next actions for this task.
+              Готовность, состояние контекстов и следующие действия по задаче.
             </p>
           </div>
 
@@ -259,7 +259,7 @@ export default function TaskReadinessContainer({
               disabled={!task || allowedNextStatuses.length === 0 || statusPending}
               className="h-10 min-w-[220px] rounded-md border border-slate-800/70 bg-slate-950/60 px-3 text-sm text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60"
             >
-              <option value="">Change status</option>
+              <option value="">Изменить статус</option>
               {allowedNextStatuses.map((status) => (
                 <option key={status} value={status}>
                   {formatLabel(status)}
@@ -271,31 +271,31 @@ export default function TaskReadinessContainer({
               onClick={handleStatusChange}
               disabled={!nextStatus || statusPending}
             >
-              {statusPending ? "Updating..." : "Update status"}
+              {statusPending ? "Обновление..." : "Обновить статус"}
             </Button>
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
-            label="Readiness"
+            label="Готовность"
             value={formatPercent(task?.readiness)}
             tone={metricTone(task?.readiness)}
             progress={task?.readiness}
           />
           <Metric
-            label="Coverage"
+            label="Охват"
             value={formatPercent(task?.coverage)}
             tone={metricTone(task?.coverage)}
             progress={task?.coverage}
           />
           <Metric
-            label="Task risk"
+            label="Риск задачи"
             value={formatLabel(task?.risk)}
             tone={riskTone(task?.risk)}
           />
           <Metric
-            label="Deadline"
+            label="Дедлайн"
             value={formatDate(task?.deadline_at)}
             tone="slate"
           />
@@ -342,9 +342,9 @@ export default function TaskReadinessContainer({
           <CardHeader className="space-y-2">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-1">
-                <CardTitle>Task details</CardTitle>
+                <CardTitle>Данные задачи</CardTitle>
                 <CardDescription>
-                  Status, policy, and scheduling details for the task.
+                  Статус, политика и сроки задачи.
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -353,7 +353,7 @@ export default function TaskReadinessContainer({
                   size="sm"
                   onClick={() => setEditOpen(true)}
                   disabled={!task}
-                  aria-label="Edit task"
+                  aria-label="Изменить задачу"
                 >
                   <img
                     src="/icons/edit-svgrepo-com.svg"
@@ -367,7 +367,7 @@ export default function TaskReadinessContainer({
                   onClick={() => setDeleteOpen(true)}
                   size="sm"
                   disabled={!task || deletePending}
-                  aria-label="Delete task"
+                  aria-label="Удалить задачу"
                 >
                   <img
                     src="/icons/delete-2-svgrepo-com.svg"
@@ -381,42 +381,42 @@ export default function TaskReadinessContainer({
           </CardHeader>
           <CardContent className="space-y-4">
             <dl className="space-y-3">
-              <ValueRow label="Status" value={formatLabel(task?.status)} />
-              <ValueRow label="Priority" value={formatLabel(task?.priority)} />
-              <ValueRow label="Risk" value={formatLabel(task?.risk)} />
+              <ValueRow label="Статус" value={formatLabel(task?.status)} />
+              <ValueRow label="Приоритет" value={formatLabel(task?.priority)} />
+              <ValueRow label="Риск" value={formatLabel(task?.risk)} />
               <ValueRow
-                label="Difficulty"
-                value={task?.difficulty !== undefined ? `${task.difficulty}` : "N/A"}
+                label="Сложность"
+                value={task?.difficulty !== undefined ? `${task.difficulty}` : "Нет данных"}
               />
               <ValueRow
-                label="Readiness"
+                label="Готовность"
                 value={formatPercent(task?.readiness)}
               />
               <ValueRow
-                label="Coverage"
+                label="Охват"
                 value={formatPercent(task?.coverage)}
               />
               <ValueRow
-                label="Exam-ready mastery"
+                label="Освоение для экзамена"
                 value={
                   task?.policy?.exam_ready_min_mastery !== undefined
                     ? formatPercent(task.policy.exam_ready_min_mastery)
-                    : "N/A"
+                    : "Нет данных"
                 }
               />
               <ValueRow
-                label="Require non-critical risk"
+                label="Только некритичный риск"
                 value={
                   task?.policy?.require_non_critical_block_risk !== undefined
                     ? task.policy.require_non_critical_block_risk
-                      ? "Yes"
-                      : "No"
-                    : "N/A"
+                      ? "Да"
+                      : "Нет"
+                    : "Нет данных"
                 }
               />
-              <ValueRow label="Created" value={formatDate(task?.created_at)} />
-              <ValueRow label="Updated" value={formatDate(task?.updated_at)} />
-              <ValueRow label="Archived" value={formatDate(task?.archived_at)} />
+              <ValueRow label="Создана" value={formatDate(task?.created_at)} />
+              <ValueRow label="Обновлена" value={formatDate(task?.updated_at)} />
+              <ValueRow label="В архиве с" value={formatDate(task?.archived_at)} />
             </dl>
 
             {task ? (
@@ -427,7 +427,7 @@ export default function TaskReadinessContainer({
                     badgeTone(task.risk)
                   )}
                 >
-                  Risk: {formatLabel(task.risk)}
+                  Риск: {formatLabel(task.risk)}
                 </span>
                 <span className="rounded-md border border-slate-800/70 bg-slate-900/60 px-2 py-1 text-slate-200">
                   <span className="inline-flex items-center gap-2">
@@ -437,7 +437,7 @@ export default function TaskReadinessContainer({
                         taskStatusDotClass(task.status)
                       )}
                     />
-                    Status: {formatLabel(task.status)}
+                    Статус: {formatLabel(task.status)}
                   </span>
                 </span>
               </div>
@@ -449,9 +449,9 @@ export default function TaskReadinessContainer({
           <CardHeader className="space-y-2">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-1">
-                <CardTitle>Block scores now</CardTitle>
+                <CardTitle>Текущие оценки контекстов</CardTitle>
                 <CardDescription>
-                  Current mastery, freshness, and readiness score per block.
+                  Освоение, актуальность и готовность по каждому контексту.
                 </CardDescription>
               </div>
               <Button
@@ -459,7 +459,7 @@ export default function TaskReadinessContainer({
                 size="sm"
                 onClick={() => setAssessmentOpen(true)}
                 disabled={!task}
-                aria-label="Record assessment"
+                aria-label="Записать оценку"
               >
                 <img
                   src="/icons/edit-svgrepo-com.svg"
@@ -473,7 +473,7 @@ export default function TaskReadinessContainer({
           <CardContent className="space-y-4">
             {blockScoresNow.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-800 bg-slate-950/40 px-4 py-6 text-center text-sm text-slate-400">
-                No block scores available yet.
+                Оценок контекстов пока нет.
               </div>
             ) : (
               <div className="space-y-4">
@@ -492,28 +492,28 @@ export default function TaskReadinessContainer({
                           badgeTone(block.risk)
                         )}
                       >
-                        Risk: {formatLabel(block.risk)}
+                        Риск: {formatLabel(block.risk)}
                       </span>
                     </div>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                       <Metric
-                        label="Weight"
+                        label="Вес"
                         value={formatPercent(block.weight)}
                         tone="slate"
                       />
                       <Metric
-                        label="Mastery"
+                        label="Освоение"
                         value={formatPercent(block.mastery)}
                         tone={metricTone(block.mastery)}
                         progress={block.mastery}
                       />
                       <Metric
-                        label="Freshness"
+                        label="Актуальность"
                         value={formatFractionPercent(block.freshness)}
                         tone="slate"
                       />
                       <Metric
-                        label="Score now"
+                        label="Текущая оценка"
                         value={formatPercent(block.scoreNow)}
                         tone={metricTone(block.scoreNow)}
                         progress={block.scoreNow}
@@ -530,15 +530,15 @@ export default function TaskReadinessContainer({
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="lg:flex lg:flex-col">
           <CardHeader className="space-y-2">
-            <CardTitle>Recommendations</CardTitle>
+            <CardTitle>Рекомендации</CardTitle>
             <CardDescription>
-              Targeted next actions based on the current deficits.
+              Следующие действия на основе текущих дефицитов.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {recommendations.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-800 bg-slate-950/40 px-4 py-6 text-center text-sm text-slate-400">
-                No recommendations available.
+                Рекомендаций пока нет.
               </div>
             ) : (
               <div className="space-y-4">
@@ -549,7 +549,7 @@ export default function TaskReadinessContainer({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h3 className="text-sm font-semibold text-slate-100">
-                        {formatLabel(rec.block_type)} focus
+                        Фокус: {formatLabel(rec.block_type)}
                       </h3>
                       <span
                         className={cn(
@@ -557,7 +557,7 @@ export default function TaskReadinessContainer({
                           badgeTone(rec.priority_hint)
                         )}
                       >
-                        Priority: {formatLabel(rec.priority_hint)}
+                        Приоритет: {formatLabel(rec.priority_hint)}
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-slate-300">
@@ -570,7 +570,7 @@ export default function TaskReadinessContainer({
                         ))}
                       </ul>
                     ) : (
-                      <p className="mt-3 text-sm text-slate-400">No actions listed.</p>
+                      <p className="mt-3 text-sm text-slate-400">Действия не указаны.</p>
                     )}
                   </div>
                 ))}
@@ -581,15 +581,15 @@ export default function TaskReadinessContainer({
 
         <Card className="lg:flex lg:flex-col">
           <CardHeader className="space-y-2">
-            <CardTitle>Readiness drop forecast</CardTitle>
+            <CardTitle>Прогноз снижения готовности</CardTitle>
             <CardDescription>
-              Expected readiness and risk over the next checkpoints.
+              Ожидаемые готовность и риск на следующих контрольных точках.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {dropForecast.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-800 bg-slate-950/40 px-4 py-6 text-center text-sm text-slate-400">
-                No forecast points returned.
+                Прогноз пока недоступен.
               </div>
             ) : (
               dropForecast.map((point, index) => (
@@ -601,7 +601,7 @@ export default function TaskReadinessContainer({
                     {formatDate(point.at)}
                   </span>
                   <span className="text-slate-100">
-                    {formatPercent(point.readiness)} readiness
+                    {formatPercent(point.readiness)} готовности
                   </span>
                   <span
                     className={cn(
@@ -623,9 +623,9 @@ export default function TaskReadinessContainer({
           <CardHeader className="space-y-2">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-1">
-                <CardTitle>Block configuration</CardTitle>
+                <CardTitle>Настройка контекстов</CardTitle>
                 <CardDescription>
-                  Weights, decay profiles, and last confirmations by block.
+                  Веса, профили снижения и последние подтверждения по контекстам.
                 </CardDescription>
               </div>
               <Button
@@ -633,7 +633,7 @@ export default function TaskReadinessContainer({
                 size="sm"
                 onClick={() => setWeightsOpen(true)}
                 disabled={!task}
-                aria-label="Edit block weights"
+                aria-label="Изменить веса контекстов"
               >
                 <img
                   src="/icons/edit-svgrepo-com.svg"
@@ -647,7 +647,7 @@ export default function TaskReadinessContainer({
           <CardContent className="space-y-4">
             {taskBlocks.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-800 bg-slate-950/40 px-4 py-6 text-center text-sm text-slate-400">
-                No block configuration yet.
+                Настройки контекстов пока не заданы.
               </div>
             ) : (
               <div className="space-y-4">
@@ -666,14 +666,14 @@ export default function TaskReadinessContainer({
                           badgeTone(block.risk_state)
                         )}
                       >
-                        Risk: {formatLabel(block.risk_state)}
+                        Риск: {formatLabel(block.risk_state)}
                       </span>
                     </div>
                     <div className="mt-3 grid gap-2 text-sm text-slate-300 sm:grid-cols-2">
-                      <span>Weight: {formatPercent(block.weight)}</span>
-                      <span>Mastery: {formatPercent(block.mastery)}</span>
-                      <span>Decay profile: {block.decay_profile || "N/A"}</span>
-                      <span>Last assessed: {formatDate(block.last_assessed_at)}</span>
+                      <span>Вес: {formatPercent(block.weight)}</span>
+                      <span>Освоение: {formatPercent(block.mastery)}</span>
+                      <span>Профиль снижения: {block.decay_profile || "Нет данных"}</span>
+                      <span>Последняя оценка: {formatDate(block.last_assessed_at)}</span>
                     </div>
                   </div>
                 ))}
@@ -684,15 +684,15 @@ export default function TaskReadinessContainer({
 
         <Card className="lg:flex lg:flex-col">
           <CardHeader className="space-y-2">
-            <CardTitle>Last assessments</CardTitle>
+            <CardTitle>Последние оценки</CardTitle>
             <CardDescription>
-              Most recent confirmations per block from the read-model.
+              Последние подтверждения по каждому контексту.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {lastAssessmentEntries.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-800 bg-slate-950/40 px-4 py-6 text-center text-sm text-slate-400">
-                No assessments recorded yet.
+                Оценок пока нет.
               </div>
             ) : (
               lastAssessmentEntries.map(([key, value]) => (

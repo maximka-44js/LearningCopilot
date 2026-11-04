@@ -93,8 +93,8 @@ export function useLibraryTreeClipboard(params: UseLibraryTreeClipboardParams) {
     resetSelection();
 
     toast({
-      title: "Copied",
-      description: `${selectedEntries.length} item(s) copied to clipboard.`,
+      title: "Скопировано",
+      description: `Элементов скопировано: ${selectedEntries.length}.`,
     });
   }, [effectiveLibraryId, resetSelection, selectedEntries, toast]);
 
@@ -118,8 +118,8 @@ export function useLibraryTreeClipboard(params: UseLibraryTreeClipboardParams) {
     resetSelection();
 
     toast({
-      title: "Cut",
-      description: `${selectedEntries.length} item(s) ready to move.`,
+      title: "Вырезано",
+      description: `Элементов готово к перемещению: ${selectedEntries.length}.`,
     });
   }, [effectiveLibraryId, resetSelection, selectedEntries, toast]);
 
@@ -130,8 +130,8 @@ export function useLibraryTreeClipboard(params: UseLibraryTreeClipboardParams) {
 
     if (storageClipboard.libraryId !== effectiveLibraryId) {
       toast({
-        title: "Cannot paste",
-        description: "Paste is allowed only inside the same library.",
+        title: "Не удалось вставить",
+        description: "Вставка доступна только внутри одной библиотеки.",
         variant: "error",
       });
       return;
@@ -150,8 +150,8 @@ export function useLibraryTreeClipboard(params: UseLibraryTreeClipboardParams) {
 
       if (movableEntries.length === 0) {
         toast({
-          title: "Nothing to move",
-          description: "Selected items are already in this folder.",
+          title: "Нечего перемещать",
+          description: "Выбранные элементы уже находятся в этой папке.",
         });
         return;
       }
@@ -186,13 +186,13 @@ export function useLibraryTreeClipboard(params: UseLibraryTreeClipboardParams) {
         resetSelection();
         setStorageClipboard(null);
         toast({
-          title: "Move complete",
-          description: `${movableEntries.length} item(s) moved.`,
+          title: "Перемещение завершено",
+          description: `Элементов перемещено: ${movableEntries.length}.`,
         });
       } catch {
         toast({
-          title: "Move failed",
-          description: "Unable to move selected items right now.",
+          title: "Не удалось переместить",
+          description: "Не удалось переместить выбранные элементы.",
           variant: "error",
         });
       } finally {
@@ -221,13 +221,13 @@ export function useLibraryTreeClipboard(params: UseLibraryTreeClipboardParams) {
 
       await invalidateTreeData();
       toast({
-        title: "Paste complete",
-        description: `${storageClipboard.entries.length} item(s) inserted.`,
+        title: "Вставка завершена",
+        description: `Элементов вставлено: ${storageClipboard.entries.length}.`,
       });
     } catch {
       toast({
-        title: "Paste failed",
-        description: "Unable to paste selected items right now.",
+        title: "Не удалось вставить",
+        description: "Не удалось вставить выбранные элементы.",
         variant: "error",
       });
     } finally {
