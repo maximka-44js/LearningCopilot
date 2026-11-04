@@ -21,8 +21,13 @@ export async function signOutWithKeycloak() {
     return;
   }
 
-  const session = await auth();
-  const idToken = session?.idToken;
+  let idToken: string | undefined;
+  try {
+    const session = await auth();
+    idToken = session?.idToken;
+  } catch (error) {
+    console.error("Failed to read the current auth session during logout:", error);
+  }
 
   const logoutUrl = new URL(
     "protocol/openid-connect/logout",
