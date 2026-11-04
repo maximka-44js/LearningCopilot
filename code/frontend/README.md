@@ -1,6 +1,6 @@
 # Learning Copilot frontend
 
-Next.js-интерфейс проекта Learning Copilot.
+Next.js -- интерфейс проекта Learning Copilot.
 
 ## Локальный запуск
 

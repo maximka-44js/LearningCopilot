@@ -4,7 +4,7 @@ package request
 type InitUpload struct {
 	LibraryID        string `json:"library_id" validate:"required,uuid4"`
 	FolderID         string `json:"folder_id,omitempty" validate:"omitempty,uuid4"`
-	Name             string `json:"name" validate:"required,max=40"`
+	Name             string `json:"name" validate:"required,max=255"`
 	MimeType         string `json:"mime_type" validate:"required"`
 	Size             int64  `json:"size" validate:"required,min=0"`
 	ChecksumDeclared string `json:"checksum_declared,omitempty"`
@@ -40,7 +40,7 @@ type UpdateFileParams struct {
 
 type UpdateFile struct {
 	FolderID string `json:"folder_id,omitempty" validate:"omitempty,uuid4"`
-	Name     string `json:"name" validate:"required,max=40"`
+	Name     string `json:"name" validate:"required,max=255"`
 }
 
 type CopyFileParams struct {
@@ -49,5 +49,5 @@ type CopyFileParams struct {
 
 type CopyFile struct {
 	TargetFolderID string `json:"target_folder_id,omitempty" validate:"omitempty,uuid4"`
-	Name           string `json:"name,omitempty" validate:"omitempty,max=40"`
+	Name           string `json:"name,omitempty" validate:"omitempty,max=255"`
 }

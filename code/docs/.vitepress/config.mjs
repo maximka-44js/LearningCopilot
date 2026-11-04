@@ -14,6 +14,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Помощь', link: '/help' },
+      { text: 'REST API', link: '/api/' },
       { text: 'Техническая документация', link: '/technical/' },
     ],
     sidebar: generateSidebar({

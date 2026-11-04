@@ -89,11 +89,10 @@ function handleUnauthorized(error: AxiosError) {
     return Promise.reject(error);
   }
 
-  if (originalRequest?.skipAuthRedirect) {
-    return Promise.reject(error);
-  }
-
   if (originalRequest?._retry) {
+    if (originalRequest.skipAuthRedirect) {
+      return Promise.reject(error);
+    }
     return redirectToSignIn(error);
   }
 
@@ -118,6 +117,9 @@ async function tryRefreshAndRetry(
     session?.error === "RefreshTokenExpired" ||
     !session?.accessToken
   ) {
+    if (originalRequest?.skipAuthRedirect) {
+      return Promise.reject(error);
+    }
     return redirectToSignIn(error);
   }
 
